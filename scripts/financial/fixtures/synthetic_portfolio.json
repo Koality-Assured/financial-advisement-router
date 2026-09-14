@@ -1,0 +1,23 @@
+{
+  "base_currency": "USD",
+  "risk_free_rate": "0.03",
+  "mar": "0.03",
+  "assets": [
+    {"id": "SYN-A", "name": "Northwind Bond Sleeve", "expected_return": "0.04"},
+    {"id": "SYN-B", "name": "Northwind Equity Sleeve", "expected_return": "0.09"},
+    {"id": "SYN-C", "name": "Northwind REIT Sleeve", "expected_return": "0.07"}
+  ],
+  "covariance": [
+    ["0.01", "0", "0"],
+    ["0", "0.04", "0"],
+    ["0", "0", "0.16"]
+  ],
+  "return_paths": [
+    ["0.003", "0.012", "0.006"],
+    ["0.002", "-0.015", "0.004"],
+    ["0.004", "0.018", "0.001"],
+    ["0.003", "0.009", "0.007"],
+    ["0.002", "-0.004", "0.002"],
+    ["0.003", "0.011", "0.005"]
+  ]
+}

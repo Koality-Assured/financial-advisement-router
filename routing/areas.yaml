@@ -94,3 +94,9 @@ nested_defaults:
     default_agent: benchmark-agent
   - path: ai-tooling/skills/iac
     default_agent: as-code-agent
+  - path: ai-tooling/skills/financial
+    default_agent: financial-modeling-analyst
+  - path: supporting/financial
+    default_agent: financial-modeling-analyst
+  - path: scripts/financial
+    default_agent: financial-modeling-analyst

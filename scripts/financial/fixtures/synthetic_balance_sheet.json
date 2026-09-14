@@ -1,0 +1,26 @@
+{
+  "issuer": "Northwind Analytics Inc",
+  "cik": "0001234567",
+  "cusip": "00000NWD1",
+  "currency": "USD",
+  "as_of": "2024-12-31",
+  "advisory_stamp": "NON-DISCRETIONARY FINANCIAL RESEARCH PRODUCT - FOR ANALYTICAL PURPOSES ONLY - NOT INDIVIDUAL INVESTMENT ADVICE",
+  "assets": {
+    "cash": "40000000.00",
+    "receivables": "15000000.00",
+    "inventory": "10000000.00",
+    "ppe_net": "85000000.00",
+    "total": "150000000.00"
+  },
+  "liabilities": {
+    "accounts_payable": "12000000.00",
+    "short_term_debt": "8000000.00",
+    "long_term_debt": "30000000.00",
+    "total": "50000000.00"
+  },
+  "equity": {
+    "common_stock": "10000000.00",
+    "retained_earnings": "90000000.00",
+    "total": "100000000.00"
+  }
+}
