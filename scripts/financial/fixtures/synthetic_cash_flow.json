@@ -1,0 +1,13 @@
+{
+  "issuer": "Northwind Analytics Inc",
+  "cik": "0001234567",
+  "currency": "USD",
+  "period_end": "2024-12-31",
+  "advisory_stamp": "NON-DISCRETIONARY FINANCIAL RESEARCH PRODUCT - FOR ANALYTICAL PURPOSES ONLY - NOT INDIVIDUAL INVESTMENT ADVICE",
+  "beginning_cash": "32000000.00",
+  "cfo": "18000000.00",
+  "cfi": "-9000000.00",
+  "cff": "-1000000.00",
+  "ending_cash": "40000000.00",
+  "unlevered_fcf_explicit": ["12000000.00", "13200000.00", "14520000.00"]
+}

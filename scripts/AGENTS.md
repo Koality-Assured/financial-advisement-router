@@ -15,6 +15,7 @@ Purpose subfolders. Keep this file, human [`README.md`](./README.md), and genera
 | `routing/` | Script index, routing index, skill dispatch, worktree spawn |
 | `qmd/` / `cost-layers/` | Retrieval + combined validation |
 | `ai-tooling/` / `docs/` / `projects/` | Catalog / wiki / scaffold helpers |
+| `financial/` | Decimal DCF, portfolio, EDGAR, VaR (advisory only) |
 
 `REPO_ROOT` from `paths.resolve_repo_root()`. Import helpers from `_lib`.
 

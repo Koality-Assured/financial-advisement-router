@@ -1,0 +1,40 @@
+{
+  "cik": 1234567,
+  "entityName": "Northwind Analytics Inc",
+  "facts": {
+    "us-gaap": {
+      "Assets": {
+        "label": "Assets",
+        "units": {
+          "USD": [
+            {"end": "2024-12-31", "val": "150000000.00", "form": "10-K", "fy": 2024, "fp": "FY"}
+          ]
+        }
+      },
+      "Liabilities": {
+        "label": "Liabilities",
+        "units": {
+          "USD": [
+            {"end": "2024-12-31", "val": "50000000.00", "form": "10-K", "fy": 2024, "fp": "FY"}
+          ]
+        }
+      },
+      "StockholdersEquity": {
+        "label": "Stockholders Equity",
+        "units": {
+          "USD": [
+            {"end": "2024-12-31", "val": "100000000.00", "form": "10-K", "fy": 2024, "fp": "FY"}
+          ]
+        }
+      },
+      "NetCashProvidedByUsedInOperatingActivities": {
+        "label": "Net cash from operating activities",
+        "units": {
+          "USD": [
+            {"end": "2024-12-31", "val": "18000000.00", "form": "10-K", "fy": 2024, "fp": "FY"}
+          ]
+        }
+      }
+    }
+  }
+}

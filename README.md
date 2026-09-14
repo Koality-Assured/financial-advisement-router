@@ -81,6 +81,8 @@ ai-harness-core/
 └── actionable/ projects/ research/ results/ scratch/ change-history/ # Managed lifecycle zones
 ```
 
+Top-level areas: `actionable/` `ai-tooling/` `change-history/` `docs/` `projects/` `references/` `research/` `results/` `routing/` `scratch/` `scripts/` `supporting/`.
+
 ---
 
 ## Key Elements & Architectural Layers

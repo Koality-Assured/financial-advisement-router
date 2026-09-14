@@ -1,0 +1,21 @@
+{
+  "issuer": "Northwind Analytics Inc",
+  "cik": "0001234567",
+  "currency": "USD",
+  "shares_outstanding": "1000000",
+  "net_debt": "25000000.00",
+  "capm": {
+    "risk_free": "0.04",
+    "beta": "1.10",
+    "equity_risk_premium": "0.05"
+  },
+  "capital_structure": {
+    "equity_weight": "0.70",
+    "debt_weight": "0.30",
+    "pre_tax_cost_of_debt": "0.06",
+    "tax_rate": "0.21"
+  },
+  "fcf": ["12000000.00", "13200000.00", "14520000.00"],
+  "terminal_growth": "0.025",
+  "long_run_gdp_growth_cap": "0.03"
+}
