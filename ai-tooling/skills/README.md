@@ -8,10 +8,6 @@ Human index (not agent SoT):
 
 | Skill | Owner | Isolation |
 | --- | --- | --- |
-| [`portfolio-optimization/`](./financial/portfolio-optimization/) | portfolio-strategy-operator | mutate |
-| [`dcf-valuation-model/`](./financial/dcf-valuation-model/) | financial-modeling-analyst | mutate |
-| [`sec-edgar-extract/`](./financial/sec-edgar-extract/) | sec-compliance-curator | mutate |
-| [`risk-stress-simulation/`](./financial/risk-stress-simulation/) | risk-stress-tester | mutate |
 | [`google-drive-manage/`](./google/google-drive-manage/) | document-operator | mutate |
 | [`google-gmail-manage/`](./google/google-gmail-manage/) | document-operator | mutate |
 | [`google-workspace-metadata/`](./google/google-workspace-metadata/) | document-operator | read-only |

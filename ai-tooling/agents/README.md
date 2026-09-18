@@ -15,15 +15,6 @@ Human index (not agent SoT):
 | [`research-operator/`](./research-operator/) | Deep technical research, BenchLM, AI vendor tracking, community intelligence, web crawl | high |
 | [`security-tooling-operator/`](./security-tooling-operator/) | Defensive assessments, threat modeling, AD/Windows audit, network discovery, packet review | standard |
 
-### Domain specialists (financial spoke)
-
-| Specialist | Role | Tier |
-| --- | --- | --- |
-| [`portfolio-strategy-operator/`](./portfolio-strategy-operator/) | Mean-variance allocation, Sharpe/Sortino | high |
-| [`financial-modeling-analyst/`](./financial-modeling-analyst/) | DCF, CAPM WACC, sensitivity tables | high |
-| [`sec-compliance-curator/`](./sec-compliance-curator/) | EDGAR companyfacts, us-gaap extract, Reg BI checklist | standard |
-| [`risk-stress-tester/`](./risk-stress-tester/) | Seeded VaR/CVaR on synthetic series | high |
-
 ### Coordinator & true specialists
 
 | Specialist | Role | Tier |
