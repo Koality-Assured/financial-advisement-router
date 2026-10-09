@@ -1,0 +1,279 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%" role="img" aria-labelledby="logoTitle logoDesc">
+  <title id="logoTitle">Financial Advisement Router Logo</title>
+  <desc id="logoDesc">Emblem representing quantitative financial modeling with an asset allocation polyhedron, candlestick telemetry, efficient frontier curve, and bullion gold and emerald profit accents on an obsidian canvas.</desc>
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#04070D"/>
+      <stop offset="45%" stop-color="#09111A"/>
+      <stop offset="100%" stop-color="#050910"/>
+    </linearGradient>
+
+    <!-- Border Ring Gradient -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" stop-opacity="0.9"/>
+      <stop offset="35%" stop-color="#34D399" stop-opacity="0.7"/>
+      <stop offset="65%" stop-color="#F59E0B" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#D97706" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <!-- Bullion Gold Gradients -->
+    <linearGradient id="bullionGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFBEB"/>
+      <stop offset="25%" stop-color="#FCD34D"/>
+      <stop offset="60%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+
+    <linearGradient id="goldSheen" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D97706"/>
+      <stop offset="50%" stop-color="#FDE68A"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+
+    <!-- Emerald Profit Gradients -->
+    <linearGradient id="emeraldProfit" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D1FAE5"/>
+      <stop offset="30%" stop-color="#34D399"/>
+      <stop offset="70%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+
+    <linearGradient id="emeraldGlowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6EE7B7"/>
+      <stop offset="100%" stop-color="#065F46"/>
+    </linearGradient>
+
+    <!-- Obsidian Polyhedron Facet Gradients -->
+    <linearGradient id="facetObsidianDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.98"/>
+    </linearGradient>
+
+    <linearGradient id="facetObsidianMid" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#334155" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#1E293B" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <linearGradient id="facetGlassHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.35"/>
+      <stop offset="40%" stop-color="#6EE7B7" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#047857" stop-opacity="0.05"/>
+    </linearGradient>
+
+    <!-- Efficient Frontier Curve Gradient -->
+    <linearGradient id="frontierGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10B981" stop-opacity="0.2"/>
+      <stop offset="45%" stop-color="#10B981" stop-opacity="0.9"/>
+      <stop offset="80%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+
+    <!-- Radial Glows -->
+    <radialGradient id="centerCoreGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#10B981" stop-opacity="0.32"/>
+      <stop offset="40%" stop-color="#F59E0B" stop-opacity="0.18"/>
+      <stop offset="75%" stop-color="#064E3B" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#04070D" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="tangencyGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="35%" stop-color="#FDE047" stop-opacity="0.75"/>
+      <stop offset="70%" stop-color="#F59E0B" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#D97706" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Filters -->
+    <filter id="bloom" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Base Canvas -->
+  <rect width="512" height="512" rx="100" fill="url(#bgGrad)"/>
+  <rect width="510" height="510" x="1" y="1" rx="99" fill="none" stroke="url(#borderGrad)" stroke-width="2" stroke-opacity="0.6"/>
+
+  <!-- Ambient Core Glow -->
+  <circle cx="256" cy="256" r="210" fill="url(#centerCoreGlow)"/>
+
+  <!-- Telemetry Precision Grid / Polar Radians -->
+  <g opacity="0.15" stroke="#34D399" stroke-width="1">
+    <circle cx="256" cy="256" r="190" fill="none" stroke-dasharray="3 6"/>
+    <circle cx="256" cy="256" r="140" fill="none" stroke-dasharray="2 4"/>
+    <circle cx="256" cy="256" r="90" fill="none"/>
+    <line x1="66" y1="256" x2="446" y2="256" stroke-dasharray="2 6"/>
+    <line x1="256" y1="66" x2="256" y2="446" stroke-dasharray="2 6"/>
+    <line x1="122" y1="122" x2="390" y2="390" stroke-dasharray="1 8"/>
+    <line x1="122" y1="390" x2="390" y2="122" stroke-dasharray="1 8"/>
+  </g>
+
+  <!-- Quant Telemetry Ticks (Outer Border) -->
+  <g opacity="0.35" stroke="#F59E0B" stroke-width="1.5">
+    <!-- 12-hour compass ticks representing cyclical market intervals -->
+    <line x1="256" y1="68" x2="256" y2="78"/>
+    <line x1="256" y1="434" x2="256" y2="444"/>
+    <line x1="68" y1="256" x2="78" y2="256"/>
+    <line x1="434" y1="256" x2="444" y2="256"/>
+    <line x1="124" y1="124" x2="131" y2="131"/>
+    <line x1="388" y1="124" x2="381" y2="131"/>
+    <line x1="124" y1="388" x2="131" y2="381"/>
+    <line x1="388" y1="388" x2="381" y2="381"/>
+  </g>
+
+  <!-- Candlestick Telemetry Bars (Bottom Matrix Baseline) -->
+  <g id="candlestickTelemetry" opacity="0.85">
+    <!-- Candle 1: Baseline Stabilization (Obsidian/Slate) -->
+    <line x1="110" y1="375" x2="110" y2="425" stroke="#64748B" stroke-width="1.5"/>
+    <rect x="105" y="385" width="10" height="26" rx="2" fill="#1E293B" stroke="#475569" stroke-width="1"/>
+
+    <!-- Candle 2: Modest Expansion (Emerald) -->
+    <line x1="135" y1="355" x2="135" y2="415" stroke="#10B981" stroke-width="1.5"/>
+    <rect x="130" y="365" width="10" height="36" rx="2" fill="#047857" stroke="#34D399" stroke-width="1"/>
+
+    <!-- Candle 3: Retracement Test (Gold/Amber) -->
+    <line x1="160" y1="360" x2="160" y2="428" stroke="#F59E0B" stroke-width="1.5"/>
+    <rect x="155" y="380" width="10" height="30" rx="2" fill="#78350F" stroke="#FBBF24" stroke-width="1"/>
+
+    <!-- Candle 4: Strong Impulse (Emerald) -->
+    <line x1="185" y1="330" x2="185" y2="400" stroke="#10B981" stroke-width="1.5"/>
+    <rect x="180" y="340" width="10" height="48" rx="2" fill="#059669" stroke="#6EE7B7" stroke-width="1"/>
+
+    <!-- Right Flank Telemetry Candle 5 (Gold) -->
+    <line x1="330" y1="315" x2="330" y2="390" stroke="#F59E0B" stroke-width="1.5"/>
+    <rect x="325" y="325" width="10" height="42" rx="2" fill="#B45309" stroke="#FDE68A" stroke-width="1"/>
+
+    <!-- Candle 6: Breakout Impulse (Emerald Core) -->
+    <line x1="355" y1="280" x2="355" y2="370" stroke="#10B981" stroke-width="1.5"/>
+    <rect x="350" y="295" width="10" height="56" rx="2" fill="#10B981" stroke="#A7F3D0" stroke-width="1.2"/>
+
+    <!-- Candle 7: Bullish Extension -->
+    <line x1="380" y1="260" x2="380" y2="340" stroke="#34D399" stroke-width="1.5"/>
+    <rect x="375" y="270" width="10" height="50" rx="2" fill="#059669" stroke="#34D399" stroke-width="1"/>
+
+    <!-- Candle 8: High Crest -->
+    <line x1="405" y1="230" x2="405" y2="310" stroke="#F59E0B" stroke-width="1.5"/>
+    <rect x="400" y="240" width="10" height="45" rx="2" fill="#D97706" stroke="#FDE047" stroke-width="1"/>
+  </g>
+
+  <!-- Monte Carlo Fan Scenarios (Subtle Background Simulation Paths) -->
+  <g opacity="0.3" fill="none" stroke-width="1.2">
+    <path d="M 120 410 Q 200 380, 260 310 T 400 230" stroke="#10B981" stroke-dasharray="2 4"/>
+    <path d="M 120 410 Q 220 395, 270 330 T 410 260" stroke="#059669" stroke-dasharray="3 5"/>
+    <path d="M 120 410 Q 190 350, 250 280 T 390 190" stroke="#34D399" stroke-dasharray="2 3"/>
+    <path d="M 120 410 Q 240 420, 290 360 T 415 310" stroke="#F59E0B" stroke-dasharray="1 4"/>
+    <!-- VaR 99% Tail Confidence Line -->
+    <path d="M 120 410 Q 250 435, 330 410 T 425 385" stroke="#EF4444" stroke-dasharray="4 4" stroke-opacity="0.7"/>
+  </g>
+
+  <!-- =================================================================== -->
+  <!-- CENTRAL ASSET ALLOCATION POLYHEDRON (3D ISOMETRIC SIMPLEX GEOMETRY) -->
+  <!-- =================================================================== -->
+  <g id="allocationPolyhedron" transform="translate(256, 236)">
+    <!-- Polyhedron Drop Shadow -->
+    <polygon points="0,115 -90,55 -90,-45 0,-105 90,-45 90,55" fill="#020408" opacity="0.6" filter="url(#bloom)"/>
+
+    <!-- 1. Lower Left Facet: Dark Obsidian Base -->
+    <polygon points="0,0 -85,45 -85,-35 0,-75" fill="url(#facetObsidianDark)" stroke="#10B981" stroke-width="1" stroke-opacity="0.3"/>
+
+    <!-- 2. Lower Right Facet: Emerald Shaded Facet -->
+    <polygon points="0,0 85,45 85,-35 0,-75" fill="url(#facetObsidianMid)" stroke="#34D399" stroke-width="1" stroke-opacity="0.35"/>
+
+    <!-- 3. Bottom Anchor Facet: Bullion Gold Ground -->
+    <polygon points="0,0 -85,45 0,105 85,45" fill="url(#bullionGold)" fill-opacity="0.88" stroke="#FDE68A" stroke-width="1.5"/>
+
+    <!-- 4. Top Left Facet: Radiant Emerald Crystalline Face -->
+    <polygon points="0,0 -85,-35 0,-105" fill="url(#emeraldProfit)" fill-opacity="0.9" stroke="#6EE7B7" stroke-width="1.5"/>
+
+    <!-- 5. Top Right Facet: Bullion Gold Apex Sheen -->
+    <polygon points="0,0 0,-105 85,-35" fill="url(#goldSheen)" fill-opacity="0.95" stroke="#FFFBEB" stroke-width="1.5"/>
+
+    <!-- 6. Inner Geometric Simplex Tetrahedral Vectors (Front Projection) -->
+    <!-- Front Central Triangle: The Optimal Allocation Nexus -->
+    <polygon points="0,-45 -48,22 48,22" fill="url(#facetGlassHighlight)" stroke="#FFFFFF" stroke-width="1.5" stroke-opacity="0.8"/>
+
+    <!-- Interior Mathematical Wireframe Struts -->
+    <line x1="0" y1="-105" x2="0" y2="-45" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.75"/>
+    <line x1="-85" y1="45" x2="-48" y2="22" stroke="#6EE7B7" stroke-width="1.5" stroke-opacity="0.8"/>
+    <line x1="85" y1="45" x2="48" y2="22" stroke="#FDE047" stroke-width="1.5" stroke-opacity="0.8"/>
+    <line x1="0" y1="105" x2="0" y2="22" stroke="#F59E0B" stroke-width="1.5" stroke-opacity="0.9"/>
+    <line x1="0" y1="0" x2="0" y2="-45" stroke="#FFFFFF" stroke-width="1.5" stroke-dasharray="2 3"/>
+
+    <!-- Polyhedral Vertices (Asset Allocation Weights: Equities, Fixed Income, Alternatives, Cash) -->
+    <!-- Top Vertex (Alpha / Max Return) -->
+    <circle cx="0" cy="-105" r="5" fill="#FFFFFF" stroke="#34D399" stroke-width="2"/>
+    <!-- Bottom Vertex (Liquidity / Floor) -->
+    <circle cx="0" cy="105" r="5" fill="#F59E0B" stroke="#FFFBEB" stroke-width="2"/>
+    <!-- Left Vertex (Global Equities) -->
+    <circle cx="-85" cy="-35" r="4.5" fill="#10B981" stroke="#E2E8F0" stroke-width="1.5"/>
+    <!-- Right Vertex (Fixed Income / Yield) -->
+    <circle cx="85" cy="-35" r="4.5" fill="#FBBF24" stroke="#78350F" stroke-width="1.5"/>
+    <!-- Lower Left Vertex (Risk Mitigation) -->
+    <circle cx="-85" cy="45" r="4.5" fill="#059669" stroke="#A7F3D0" stroke-width="1.5"/>
+    <!-- Lower Right Vertex (Hedging / VaR Buffer) -->
+    <circle cx="85" cy="45" r="4.5" fill="#D97706" stroke="#FEF3C7" stroke-width="1.5"/>
+
+    <!-- Central Simplex Nodes (Weight Allocation Intersections) -->
+    <circle cx="0" cy="-45" r="3.5" fill="#FFFFFF"/>
+    <circle cx="-48" cy="22" r="3.5" fill="#6EE7B7"/>
+    <circle cx="48" cy="22" r="3.5" fill="#FDE047"/>
+    <circle cx="0" cy="0" r="4.5" fill="#FFFFFF" filter="url(#softGlow)"/>
+  </g>
+
+  <!-- =================================================================== -->
+  <!-- MARKOWITZ EFFICIENT FRONTIER HYPERBOLA & TANGENCY PORTFOLIO         -->
+  <!-- =================================================================== -->
+  <g id="efficientFrontier">
+    <!-- Capital Allocation Line (CAL) / Tangency Vector -->
+    <line x1="80" y1="360" x2="390" y2="120" stroke="#F59E0B" stroke-width="1.5" stroke-opacity="0.45" stroke-dasharray="4 6"/>
+
+    <!-- Efficient Frontier Parabolic Curve -->
+    <path d="M 120 380 Q 150 280, 210 210 T 320 145 T 420 125" fill="none" stroke="url(#frontierGrad)" stroke-width="3.5" filter="url(#bloom)"/>
+    <path d="M 120 380 Q 150 280, 210 210 T 320 145 T 420 125" fill="none" stroke="#FFFFFF" stroke-width="1.2" opacity="0.9"/>
+
+    <!-- Tangency Portfolio Nexus (Optimal Sharpe Portfolio: (R_p - R_f) / sigma_p) -->
+    <g transform="translate(320, 145)" filter="url(#bloom)">
+      <circle cx="0" cy="0" r="22" fill="url(#tangencyGlow)"/>
+      <circle cx="0" cy="0" r="7" fill="#FFFFFF" stroke="#F59E0B" stroke-width="2.5"/>
+      <circle cx="0" cy="0" r="2.5" fill="#B45309"/>
+
+      <!-- Crosshair / Reticle for Target Portfolio -->
+      <line x1="-12" y1="0" x2="-8" y2="0" stroke="#F59E0B" stroke-width="1.5"/>
+      <line x1="8" y1="0" x2="12" y2="0" stroke="#F59E0B" stroke-width="1.5"/>
+      <line x1="0" y1="-12" x2="0" y2="-8" stroke="#F59E0B" stroke-width="1.5"/>
+      <line x1="0" y1="8" x2="0" y2="12" stroke="#F59E0B" stroke-width="1.5"/>
+    </g>
+
+    <!-- Mathematical Greek Symbols & Notation Callouts -->
+    <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="11" fill="#FBBF24" opacity="0.9">
+      <!-- Sharpe Ratio Marker -->
+      <text x="338" y="142" font-size="10" fill="#FDE68A">max SR</text>
+      <text x="338" y="153" font-size="8" fill="#10B981" font-weight="600">Sharpe 2.84</text>
+    </g>
+  </g>
+
+  <!-- Risk/Return Coordinate Axes Markers -->
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="9" fill="#94A3B8" opacity="0.6">
+    <text x="256" y="475" text-anchor="middle" letter-spacing="1.5">VOLATILITY (σ) &amp; VALUE-AT-RISK</text>
+    <text x="36" y="256" text-anchor="middle" transform="rotate(-90 36 256)" letter-spacing="1.5">EXPECTED RETURN (μ)</text>
+  </g>
+
+  <!-- Regulatory Compliance & Determinism Accent Badge (Top Center) -->
+  <g transform="translate(256, 42)">
+    <rect x="-85" y="-14" width="170" height="24" rx="12" fill="#0A1118" stroke="url(#borderGrad)" stroke-width="1.2"/>
+    <circle cx="-68" cy="-2" r="3.5" fill="#10B981"/>
+    <text x="4" y="2" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="9" fill="#F1F5F9" text-anchor="middle" letter-spacing="1.2">SEC • FINRA • QUANT MPT</text>
+  </g>
+</svg>
