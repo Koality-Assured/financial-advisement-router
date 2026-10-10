@@ -20,6 +20,11 @@
 ---
 
 > [!IMPORTANT]
+> **Human-Facing Documentation Only**: This README is maintained strictly for human developers and repository visitors. Autonomous AI agents MUST NOT ingest or utilize `README.md` files for operational instructions or context. All agent directives and navigation reside strictly in [`AGENTS.md`](./AGENTS.md) and [`routing/`](./routing/).
+
+---
+
+> [!IMPORTANT]
 > **NON-DISCRETIONARY FINANCIAL RESEARCH PRODUCT &mdash; FOR ANALYTICAL PURPOSES ONLY &mdash; NOT INDIVIDUAL INVESTMENT ADVICE**
 >
 > All models, simulations, weights, and metrics emitted by this harness are non-discretionary analytical tools and mathematical research products. They do not constitute personalized investment advice, endorsements, or solicitations under the Investment Advisers Act of 1940, SEC Regulation Best Interest (Reg BI), or FINRA rules. No customer nonpublic personal information (NPI) is ingested or retained.
