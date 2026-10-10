@@ -338,6 +338,16 @@ def detect_wash_sales(
             parsed_txs.append(
                 {
                     "trade_id": str(tx.get("trade_id", f"TX-{i+1}")),
+                    "lot_id": str(tx["lot_id"]) if "lot_id" in tx and tx["lot_id"] is not None else None,
+                    "liquidated_trade_id": (
+                        str(tx["liquidated_trade_id"])
+                        if "liquidated_trade_id" in tx and tx["liquidated_trade_id"] is not None
+                        else str(tx["source_trade_id"])
+                        if "source_trade_id" in tx and tx["source_trade_id"] is not None
+                        else str(tx["acquired_trade_id"])
+                        if "acquired_trade_id" in tx and tx["acquired_trade_id"] is not None
+                        else None
+                    ),
                     "date": parse_date(tx["date"]),
                     "symbol": sym,
                     "action": action,
@@ -347,8 +357,67 @@ def detect_wash_sales(
                 }
             )
 
-    # Sort chronologically
-    parsed_txs.sort(key=lambda t: t["date"])
+    # Sort chronologically, ensuring BUY precedes SELL on the same date
+    parsed_txs.sort(key=lambda t: (t["date"], 0 if t["action"] == "BUY" else 1))
+
+    # Track inventory lots per symbol to determine which buy lot(s) are liquidated by each sell.
+    # Under IRC 1091, a sale cannot wash against the acquisition of the shares being liquidated.
+    inventory: dict[str, list[dict[str, Any]]] = {}
+    sell_liquidated_lots: dict[str, set[str]] = {}
+
+    for tx in parsed_txs:
+        sym = tx["symbol"]
+        if sym not in inventory:
+            inventory[sym] = []
+        if tx["action"] == "BUY":
+            inventory[sym].append(
+                {
+                    "trade_id": tx["trade_id"],
+                    "lot_id": tx["lot_id"],
+                    "date": tx["date"],
+                    "price": tx["price"],
+                    "remaining_qty": tx["quantity"],
+                }
+            )
+        elif tx["action"] == "SELL":
+            liquidated_ids: set[str] = set()
+            if tx["liquidated_trade_id"]:
+                liquidated_ids.add(tx["liquidated_trade_id"])
+            if tx["lot_id"]:
+                liquidated_ids.add(tx["lot_id"])
+                for lot in inventory[sym]:
+                    if lot.get("lot_id") == tx["lot_id"]:
+                        liquidated_ids.add(lot["trade_id"])
+
+            needed_qty = tx["quantity"]
+            # Match available lots acquired on or before sell date.
+            # First pass: match lots whose acquisition price matches the sell's cost_basis_per_share
+            for lot in inventory[sym]:
+                if needed_qty <= 0:
+                    break
+                if lot["date"] <= tx["date"] and lot["remaining_qty"] > 0:
+                    if lot["price"] == tx["cost_basis_per_share"]:
+                        matched = min(needed_qty, lot["remaining_qty"])
+                        lot["remaining_qty"] -= matched
+                        needed_qty -= matched
+                        liquidated_ids.add(lot["trade_id"])
+                        if lot.get("lot_id"):
+                            liquidated_ids.add(lot["lot_id"])
+
+            # Second pass: if needed_qty remains, FIFO across remaining open lots on/before sell date
+            if needed_qty > 0:
+                for lot in inventory[sym]:
+                    if needed_qty <= 0:
+                        break
+                    if lot["date"] <= tx["date"] and lot["remaining_qty"] > 0:
+                        matched = min(needed_qty, lot["remaining_qty"])
+                        lot["remaining_qty"] -= matched
+                        needed_qty -= matched
+                        liquidated_ids.add(lot["trade_id"])
+                        if lot.get("lot_id"):
+                            liquidated_ids.add(lot["lot_id"])
+
+            sell_liquidated_lots[tx["trade_id"]] = liquidated_ids
 
     # Separate buys and sells
     buys: list[dict[str, Any]] = [
@@ -385,9 +454,15 @@ def detect_wash_sales(
             # Find matching replacement buys within the 61-day window
             # IRS Pub 550: match chronological earliest replacement acquisitions
             remaining_loss_qty = sold_qty
+            liquidated_for_sell = sell_liquidated_lots.get(sell["trade_id"], set())
 
             for buy in buys:
                 if buy["symbol"] != sell["symbol"]:
+                    continue
+                # Exclude the acquisition of the shares being liquidated
+                if buy["trade_id"] in liquidated_for_sell:
+                    continue
+                if buy.get("lot_id") and buy["lot_id"] in liquidated_for_sell:
                     continue
                 if buy["available_qty"] <= 0:
                     continue

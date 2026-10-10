@@ -2,7 +2,7 @@
 doc_kind: routing_map
 canonical_id: area-map
 topics: [routing, write-back, structure]
-generated_at_utc: 2026-10-10T08:27:32Z
+generated_at_utc: 2026-10-10T08:42:11Z
 generator: scripts/routing/generate_routing_index.py
 ---
 
@@ -33,16 +33,11 @@ Match [`skill-dispatch.md`](./skill-dispatch.md) first. Use this table only when
 
 | Path | Default agent |
 | --- | --- |
-| `docs/guidance/` | [`document-operator`](../ai-tooling/agents/document-operator/AGENT.md) |
-| `references/socials/` | [`research-operator`](../ai-tooling/agents/research-operator/AGENT.md) |
 | `supporting/github/` | [`github-ops`](../ai-tooling/agents/github-ops/AGENT.md) |
 | `supporting/qmd/` | [`harness-operator`](../ai-tooling/agents/harness-operator/AGENT.md) |
 | `supporting/headroom/` | [`harness-operator`](../ai-tooling/agents/harness-operator/AGENT.md) |
 | `supporting/ast-grep/` | [`harness-operator`](../ai-tooling/agents/harness-operator/AGENT.md) |
 | `supporting/powershell/` | [`harness-operator`](../ai-tooling/agents/harness-operator/AGENT.md) |
-| `supporting/slack/` | [`document-operator`](../ai-tooling/agents/document-operator/AGENT.md) |
-| `supporting/google/` | [`document-operator`](../ai-tooling/agents/document-operator/AGENT.md) |
-| `supporting/confluence/` | [`document-operator`](../ai-tooling/agents/document-operator/AGENT.md) |
 | `supporting/benchmarks/` | [`benchmark-agent`](../ai-tooling/agents/benchmark-agent/AGENT.md) |
 | `ai-tooling/skills/benchmarks/` | [`benchmark-agent`](../ai-tooling/agents/benchmark-agent/AGENT.md) |
 | `ai-tooling/skills/financial/` | [`financial-modeling-analyst`](../ai-tooling/agents/financial-modeling-analyst/AGENT.md) |

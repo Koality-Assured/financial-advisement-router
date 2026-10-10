@@ -15,6 +15,6 @@ Tagged Python utilities in purpose subfolders. Index: [`script-index.md`](./scri
 | [`financial/`](./financial/) | Decimal ledger math, portfolio optimization, DCF calculation, VaR simulation, EDGAR ingest |
 | [`ai-tooling/`](./ai-tooling/) | Skill and agent catalog validators |
 | [`docs/`](./docs/) | Structure and markdown validators |
-| [`projects/`](./projects/) | Project spec scaffold |
+| [`projects/`](../projects/) | Project spec scaffold |
 
 Invoke as `python scripts/<purpose>/<name>.py`. Regenerate the index after add/remove/rename: `python scripts/routing/generate_script_index.py`.

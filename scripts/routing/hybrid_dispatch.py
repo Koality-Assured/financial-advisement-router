@@ -249,30 +249,6 @@ FAST_PATH_RULES: list[dict[str, Any]] = [
     },
     # Security & Assessment
     {
-        "skill": "noir-scan",
-        "owner_agent": "artifact-agent",
-        "patterns": [
-            r"\b(?:run\s+)?noir\s+scan\b",
-            r"\bnoir-scan\b",
-            r"\bowasp\s+noir\b",
-            r"\bshadow\s+api\s+scan\b",
-            r"\brun_noir_scan\.py\b",
-            r"\bsecurity\s+scans?\b",
-            r"\bnoir\b",
-        ],
-    },
-    {
-        "skill": "threat-model",
-        "owner_agent": "assessment-agent",
-        "patterns": [
-            r"\bstride\s+threat\s+model\b",
-            r"\bthreat\s+model(?:ing)?\b",
-            r"\bthreat-model\b",
-            r"\bbuild_threat_model\.py\b",
-            r"\bstride\b",
-        ],
-    },
-    {
         "skill": "code-review-report",
         "owner_agent": "artifact-agent",
         "patterns": [
@@ -412,24 +388,6 @@ FAST_PATH_RULES: list[dict[str, Any]] = [
             r"\bproposal\s+report\b",
         ],
     },
-    {
-        "skill": "tabler-dashboard",
-        "owner_agent": "artifact-agent",
-        "patterns": [
-            r"\btabler-dashboard\b",
-            r"\btabler\s+dashboard\b",
-            r"\bhtml\s+dashboard\b",
-        ],
-    },
-    {
-        "skill": "foundation-site",
-        "owner_agent": "artifact-agent",
-        "patterns": [
-            r"\bfoundation-site\b",
-            r"\bfoundation\s+sites?\s+html\b",
-            r"\bbuild_foundation_site\.py\b",
-        ],
-    },
     # Memory
     {
         "skill": "memory-create",
@@ -455,51 +413,131 @@ FAST_PATH_RULES: list[dict[str, Any]] = [
             r"\barchive\s+memory\s+checkpoint\b",
         ],
     },
-    # Cloud operators
+    # Financial Valuation & Modeling
     {
-        "skill": "aws-logs",
-        "owner_agent": "cloud-operator",
-        "patterns": [r"\baws\s+logs\b", r"\baws-logs\b"],
+        "skill": "dcf-valuation-model",
+        "owner_agent": "financial-modeling-analyst",
+        "patterns": [
+            r"\bdcf\s+(?:valuation|model|calculator)\b",
+            r"\bdcf-valuation-model\b",
+            r"\bdiscounted\s+cash\s+flow\b",
+            r"\bcapm\s+wacc\b",
+            r"\bgordon\s+growth\b",
+            r"\bunlevered\s+fcf\b",
+        ],
     },
     {
-        "skill": "aws-read",
-        "owner_agent": "cloud-operator",
-        "patterns": [r"\baws\s+read\b", r"\baws-read\b", r"\binspect\s+aws\b"],
+        "skill": "comps-financial-benchmark",
+        "owner_agent": "financial-modeling-analyst",
+        "patterns": [
+            r"\bcomps\s+(?:financial\s+benchmark|calculator|valuation|multiples)\b",
+            r"\bcomps-financial-benchmark\b",
+            r"\bcomparable\s+company\s+analysis\b",
+            r"\bpeer\s+multiples?\b",
+            r"\bev/ebitda\b",
+            r"\bprice_to_book\b",
+        ],
     },
     {
-        "skill": "aws-write",
-        "owner_agent": "cloud-operator",
-        "patterns": [r"\baws\s+write\b", r"\baws-write\b", r"\bauthorize\s+aws\s+write\b"],
+        "skill": "lbo-debt-schedule",
+        "owner_agent": "financial-modeling-analyst",
+        "patterns": [
+            r"\blbo\s+(?:debt\s+schedule|model|waterfall)\b",
+            r"\blbo-debt-schedule\b",
+            r"\bleveraged\s+buyout\b",
+            r"\bdebt\s+amorti[zs]ation\s+schedule\b",
+            r"\bdebt\s+waterfall\b",
+            r"\bsponsor\s+irr\b",
+        ],
+    },
+    # Portfolio Strategy & Asset Allocation
+    {
+        "skill": "portfolio-optimization",
+        "owner_agent": "portfolio-strategy-operator",
+        "patterns": [
+            r"\bportfolio\s+optimi[zs]ation\b",
+            r"\bportfolio-optimization\b",
+            r"\bmean[- ]variance\s+weights?\b",
+            r"\befficient\s+frontier\b",
+            r"\bmax\s+sharpe\b",
+            r"\bmin\s+variance\b",
+            r"\bsortino\s+grid\b",
+        ],
     },
     {
-        "skill": "azure-logs",
-        "owner_agent": "cloud-operator",
-        "patterns": [r"\bazure\s+logs\b", r"\bazure-logs\b"],
+        "skill": "rebalancing-drift-ledger",
+        "owner_agent": "portfolio-strategy-operator",
+        "patterns": [
+            r"\brebalancing\s+drift\s+ledger\b",
+            r"\brebalancing-drift-ledger\b",
+            r"\bportfolio\s+rebalancing\b",
+            r"\ballocation\s+drift\b",
+            r"\btolerance\s+bands?\b",
+            r"\brebalance\s+orders?\b",
+        ],
     },
     {
-        "skill": "azure-read",
-        "owner_agent": "cloud-operator",
-        "patterns": [r"\bazure\s+read\b", r"\bazure-read\b", r"\binspect\s+azure\b"],
+        "skill": "tax-loss-harvesting",
+        "owner_agent": "portfolio-strategy-operator",
+        "patterns": [
+            r"\btax[- ]loss\s+harvesting\b",
+            r"\btax-loss-harvesting\b",
+            r"\bwash\s+sale(?:\s+detector)?\b",
+            r"\birc\s+(?:section\s+)?1091\b",
+            r"\bharvest\s+capital\s+losses?\b",
+            r"\breplacement\s+etf(?:s|\s+registry)?\b",
+        ],
+    },
+    # Risk & Macro Stress Testing
+    {
+        "skill": "risk-stress-simulation",
+        "owner_agent": "risk-stress-tester",
+        "patterns": [
+            r"\brisk\s+stress\s+simulation\b",
+            r"\brisk-stress-simulation\b",
+            r"\bmonte\s+carlo\s+var\b",
+            r"\b(?:parametric|historical)\s+var\b",
+            r"\bvalue\s+at\s+risk\b",
+            r"\bcvar\b",
+            r"\bexpected\s+shortfall\b",
+        ],
     },
     {
-        "skill": "azure-write",
-        "owner_agent": "cloud-operator",
-        "patterns": [r"\bazure\s+write\b", r"\bazure-write\b", r"\bauthorize\s+azure\s+write\b"],
+        "skill": "macro-scenario-shocker",
+        "owner_agent": "risk-stress-tester",
+        "patterns": [
+            r"\bmacro\s+scenario\s+shocker\b",
+            r"\bmacro-scenario-shocker\b",
+            r"\bmacro(?:economic)?\s+shocks?\b",
+            r"\byield\s+curve\s+inversion\b",
+            r"\bstagflation\s+scenario\b",
+            r"\bcredit\s+spread\s+widening\b",
+        ],
+    },
+    # SEC & Compliance
+    {
+        "skill": "sec-edgar-extract",
+        "owner_agent": "sec-compliance-curator",
+        "patterns": [
+            r"\bsec\s+edgar\s+extract\b",
+            r"\bsec-edgar-extract\b",
+            r"\bedgar\s+(?:companyfacts|ingest|parse)\b",
+            r"\bcompanyfacts\s+json\b",
+            r"\bgaap\s+facts\b",
+            r"\bsec\s+edgar\b",
+        ],
     },
     {
-        "skill": "gcp-logs",
-        "owner_agent": "cloud-operator",
-        "patterns": [r"\bgcp\s+logs\b", r"\bgcp-logs\b"],
-    },
-    {
-        "skill": "gcp-read",
-        "owner_agent": "cloud-operator",
-        "patterns": [r"\bgcp\s+read\b", r"\bgcp-read\b", r"\binspect\s+gcp\b"],
-    },
-    {
-        "skill": "gcp-write",
-        "owner_agent": "cloud-operator",
-        "patterns": [r"\bgcp\s+write\b", r"\bgcp-write\b", r"\bauthorize\s+gcp\s+write\b"],
+        "skill": "form-adv-compliance",
+        "owner_agent": "sec-compliance-curator",
+        "patterns": [
+            r"\bform\s+adv\s+compliance\b",
+            r"\bform-adv-compliance\b",
+            r"\bform\s+adv\s+(?:part\s+1|part\s+2a|brochure|audit)\b",
+            r"\bregulatory\s+aum\b",
+            r"\braum\b",
+            r"\binvestment\s+advisers?\s+act\b",
+        ],
     },
 ]
 
@@ -773,8 +811,8 @@ class Tier3AmbiguityGate:
                     {
                         "name": s,
                         "type": "skill",
-                        "owner_agent": "—",
-                        "rank": "—",
+                        "owner_agent": "-",
+                        "rank": "-",
                         "isolation": "mutate",
                         "score": 1.0,
                         "confidence": 0.5,

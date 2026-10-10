@@ -61,6 +61,7 @@ High: All enterprise values, share prices, and valuation multiples must use `dec
 
 - [`../../../../docs/standards/financial-overlay.md`](../../../../docs/standards/financial-overlay.md)
 - [`../../../../supporting/financial/fixed-point-arithmetic.md`](../../../../supporting/financial/fixed-point-arithmetic.md)
+- [`../../../../scripts/financial/comps_calculator.py`](../../../../scripts/financial/comps_calculator.py)
 - [`../../../../ai-tooling/skills/financial/dcf-valuation-model/SKILL.md`](../dcf-valuation-model/SKILL.md)
 
 ## Isolation
@@ -70,27 +71,34 @@ High: All enterprise values, share prices, and valuation multiples must use `dec
 ## How to use
 
 1. Query financial standards with `qmd search` / `qmd get` (`financial-overlay`, `fixed-point-arithmetic`). Avoid recursive tree walks.
-2. Ingest peer cohort dataset and target company fundamentals with exact Decimal conversion from string representations.
-3. Compute peer Enterprise Values:
+2. Execute the comparable company analysis calculator on the target/peer fixture:
+   ```bash
+   python scripts/financial/comps_calculator.py --fixture <fixture.json> [--metric <metric>] [--json]
+   ```
+3. Alternatively, ingest peer cohort dataset and target company fundamentals with exact Decimal conversion from string representations.
+4. Compute peer Enterprise Values:
    $$EV = \text{Market Capitalization} + \text{Total Debt} + \text{Preferred Stock} + \text{Minority Interest} - \text{Cash and Equivalents}$$
-4. Calculate individual valuation multiples:
+5. Calculate individual valuation multiples:
    - $EV / \text{Revenue}$
    - $EV / \text{EBITDA}$ (flag negative or non-meaningful multiples as `N/M`)
    - $P / E$ ($\text{Share Price} / \text{Diluted EPS}$)
+   - $P / B$ ($\text{Share Price} / \text{Book Value per Share}$)
    - $\text{Net Debt} / \text{EBITDA}$
-5. Derive distribution statistics across the peer cohort:
+6. Derive distribution statistics across the peer cohort:
    - Minimum, 25th percentile, Median, Harmonic Mean, Arithmetic Mean, 75th percentile, Maximum.
-6. Apply peer benchmark percentiles to the target company's metrics:
+7. Apply peer benchmark percentiles to the target company's metrics:
    $$\text{Implied Target } EV = \text{Peer Multiple} \times \text{Target Metric}$$
    $$\text{Implied Target Equity Value} = \text{Implied Target } EV - \text{Target Net Debt}$$
    $$\text{Implied Target Share Price} = \frac{\text{Implied Target Equity Value}}{\text{Target Diluted Shares}}$$
-7. Format output table in structured JSON / Markdown with the mandatory non-discretionary research advisory stamp:
+8. Format output table in structured JSON / Markdown with the mandatory non-discretionary research advisory stamp:
    `NON-DISCRETIONARY FINANCIAL RESEARCH PRODUCT - FOR ANALYTICAL PURPOSES ONLY - NOT INDIVIDUAL INVESTMENT ADVICE`.
 
 ## Dry run
 
 ```bash
 python scripts/ai-tooling/validate_skill.py --skill comps-financial-benchmark --dry-run
+python scripts/financial/comps_calculator.py --dry-run
+python scripts/financial/comps_calculator.py --json
 python -m unittest scripts.tests.test_financial_decimal
 ```
 

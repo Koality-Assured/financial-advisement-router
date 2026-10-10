@@ -61,6 +61,7 @@ High: Strict adherence to IRC Section 1091 (wash-sale rule covering 30 days befo
 - IRC Section 1091 (Loss from Wash Sales of Stock or Securities)
 - [`../../../../docs/standards/financial-overlay.md`](../../../../docs/standards/financial-overlay.md)
 - [`../../../../supporting/financial/fixed-point-arithmetic.md`](../../../../supporting/financial/fixed-point-arithmetic.md)
+- [`../../../../scripts/financial/wash_sale_detector.py`](../../../../scripts/financial/wash_sale_detector.py)
 - [`../../../../ai-tooling/skills/financial/portfolio-optimization/SKILL.md`](../portfolio-optimization/SKILL.md)
 
 ## Isolation
@@ -72,9 +73,12 @@ High: Strict adherence to IRC Section 1091 (wash-sale rule covering 30 days befo
 1. Discover tax guidelines and fixed-point standards with `qmd search` / `qmd get` (`fixed-point-arithmetic`, `financial-overlay`). Avoid tree walks.
 2. Ingest tax lot ledger with exact purchase date, per-share cost basis, share count, and current bid/ask price in Decimal.
 3. Filter lots using Highest-In, First-Out (HIFO) or Specific Identification to isolate positions with unrealized losses exceeding minimum harvest thresholds (e.g. loss > \$250 or loss > 3% of position value).
-4. Conduct Wash-Sale Rule Audit (IRC Section 1091):
+4. Conduct Wash-Sale Rule Audit (IRC Section 1091) via the automated wash-sale detector:
+   ```bash
+   python scripts/financial/wash_sale_detector.py --fixture <fixture.json> [--symbol <symbol>] [--window-days 30] [--json]
+   ```
    - Check the 30 days preceding the intended sale date for any purchase of the same or substantially identical securities.
-   - Check for pending dividend reinvestments or open option contracts that could trigger wash-sale status.
+   - Prevent self-matching false positives: exclude the acquisition of the very shares being liquidated from candidate replacement buys.
    - If wash sale occurs, mark disqualified shares and calculate disallowed loss to adjust basis of replacement shares.
 5. Select Proxy / Substitute Asset:
    - Identify candidate replacement ETF or mutual fund tracking a complementary index to maintain target asset class exposure (e.g., replace S&P 500 ETF with Russell 1000 or Total US Stock Market ETF).
@@ -89,6 +93,8 @@ High: Strict adherence to IRC Section 1091 (wash-sale rule covering 30 days befo
 
 ```bash
 python scripts/ai-tooling/validate_skill.py --skill tax-loss-harvesting --dry-run
+python scripts/financial/wash_sale_detector.py --dry-run
+python scripts/financial/wash_sale_detector.py --json
 python -m unittest scripts.tests.test_financial_decimal
 ```
 

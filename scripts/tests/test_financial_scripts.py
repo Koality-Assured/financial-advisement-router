@@ -196,6 +196,37 @@ class TestCompsCalculator(unittest.TestCase):
             self.assertEqual(implied["harmonic_mean"]["equity_value"], "190000000.00")
             self.assertEqual(implied["harmonic_mean"]["value_per_share"], "95.00")
 
+    def test_target_implied_valuations_price_to_book(self) -> None:
+        with ledger_context():
+            stats = {
+                "harmonic_mean": "3.0000",
+                "arithmetic_mean": "4.0000",
+                "median": "3.5000",
+            }
+            # Target with total book_value
+            target_bv = {
+                "book_value": "50000000.00",
+                "net_debt": "10000000.00",
+                "shares_outstanding": "2000000",
+            }
+            implied_bv = compute_target_implied_valuations(stats, "price_to_book", target_bv)
+            # harmonic: equity = 3 * 50m = 150m; ev = 150m + 10m = 160m; per_share = 150m / 2m = 75.00
+            self.assertEqual(implied_bv["harmonic_mean"]["equity_value"], "150000000.00")
+            self.assertEqual(implied_bv["harmonic_mean"]["enterprise_value"], "160000000.00")
+            self.assertEqual(implied_bv["harmonic_mean"]["value_per_share"], "75.00")
+
+            # Target with book_value_per_share
+            target_bvps = {
+                "book_value_per_share": "25.00",
+                "net_debt": "10000000.00",
+                "shares_outstanding": "2000000",
+            }
+            implied_bvps = compute_target_implied_valuations(stats, "price_to_book", target_bvps)
+            # harmonic: per_share = 3 * 25 = 75.00; equity = 75 * 2m = 150m; ev = 150m + 10m = 160m
+            self.assertEqual(implied_bvps["harmonic_mean"]["value_per_share"], "75.00")
+            self.assertEqual(implied_bvps["harmonic_mean"]["equity_value"], "150000000.00")
+            self.assertEqual(implied_bvps["harmonic_mean"]["enterprise_value"], "160000000.00")
+
     def test_comps_fixture_and_replay(self) -> None:
         fixture = _load("synthetic_comps.json")
         first = run_comps(fixture)
@@ -320,6 +351,45 @@ class TestWashSaleDetector(unittest.TestCase):
         self.assertEqual(res["clean_loss_count"], 1)
         self.assertEqual(res["total_disallowed_loss"], "0.00")
         self.assertEqual(res["net_allowable_loss"], "-1000.00")
+
+    def test_holding_period_under_30_days_no_self_match(self) -> None:
+        """Shares held for under 30 days and sold at a loss must not match against their own buy lot."""
+        txs = [
+            {"trade_id": "B1", "date": "2026-01-15", "symbol": "XYZ", "action": "BUY", "quantity": "100", "price": "100.00"},
+            {"trade_id": "S1", "date": "2026-01-25", "symbol": "XYZ", "action": "SELL", "quantity": "100", "price": "80.00", "cost_basis_per_share": "100.00"},
+        ]
+        res = detect_wash_sales(txs)
+        self.assertEqual(res["wash_sale_count"], 0)
+        self.assertEqual(res["clean_loss_count"], 1)
+        self.assertEqual(res["total_realized_loss"], "-2000.00")
+        self.assertEqual(res["total_disallowed_loss"], "0.00")
+        self.assertEqual(res["net_allowable_loss"], "-2000.00")
+
+    def test_day_trade_no_self_match(self) -> None:
+        """Intraday buy and sell of the same lot must not trigger a wash sale against itself."""
+        txs = [
+            {"trade_id": "B1", "date": "2026-01-15", "symbol": "XYZ", "action": "BUY", "quantity": "100", "price": "100.00"},
+            {"trade_id": "S1", "date": "2026-01-15", "symbol": "XYZ", "action": "SELL", "quantity": "100", "price": "80.00", "cost_basis_per_share": "100.00"},
+        ]
+        res = detect_wash_sales(txs)
+        self.assertEqual(res["wash_sale_count"], 0)
+        self.assertEqual(res["clean_loss_count"], 1)
+        self.assertEqual(res["total_realized_loss"], "-2000.00")
+        self.assertEqual(res["total_disallowed_loss"], "0.00")
+        self.assertEqual(res["net_allowable_loss"], "-2000.00")
+
+    def test_day_trade_with_replacement_buy(self) -> None:
+        """Day trade followed by a second acquisition matches the second acquisition as a wash sale."""
+        txs = [
+            {"trade_id": "B1", "date": "2026-01-15", "symbol": "XYZ", "action": "BUY", "quantity": "100", "price": "100.00"},
+            {"trade_id": "S1", "date": "2026-01-15", "symbol": "XYZ", "action": "SELL", "quantity": "100", "price": "80.00", "cost_basis_per_share": "100.00"},
+            {"trade_id": "B2", "date": "2026-01-15", "symbol": "XYZ", "action": "BUY", "quantity": "100", "price": "85.00"},
+        ]
+        res = detect_wash_sales(txs)
+        self.assertEqual(res["wash_sale_count"], 1)
+        self.assertEqual(res["clean_loss_count"], 0)
+        self.assertEqual(res["wash_sales"][0]["replacement_trade_id"], "B2")
+        self.assertEqual(res["total_disallowed_loss"], "-2000.00")
 
     def test_wash_sale_fixture_complete(self) -> None:
         fixture = _load("synthetic_wash_sale.json")

@@ -248,6 +248,25 @@ def compute_target_implied_valuations(
                 "equity_value": str(quantize_money(equity)),
                 "value_per_share": str(quantize_money(per_share)),
             }
+        elif metric == "price_to_book":
+            if "book_value" in target:
+                bv = to_decimal(target["book_value"], field="target.book_value")
+                equity = mult * bv
+                ev = equity + net_debt
+                per_share = equity / shares
+            elif "book_value_per_share" in target:
+                bvps = to_decimal(target["book_value_per_share"], field="target.book_value_per_share")
+                per_share = mult * bvps
+                equity = per_share * shares
+                ev = equity + net_debt
+            else:
+                continue
+            implied[key] = {
+                "multiple": str(quantize_multiple(mult)),
+                "enterprise_value": str(quantize_money(ev)),
+                "equity_value": str(quantize_money(equity)),
+                "value_per_share": str(quantize_money(per_share)),
+            }
 
     return implied
 
@@ -340,6 +359,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--target-ebitda", help="Override target company EBITDA (Decimal string)")
     parser.add_argument("--target-net-income", help="Override target company Net Income (Decimal string)")
+    parser.add_argument("--target-book-value", help="Override target company Book Value (Decimal string)")
     parser.add_argument("--target-net-debt", help="Override target company Net Debt (Decimal string)")
     parser.add_argument("--target-shares", help="Override target company diluted shares (Decimal string)")
     parser.add_argument("--json", action="store_true", help="Print structured JSON output")
@@ -357,6 +377,7 @@ def main(argv: list[str] | None = None) -> int:
                 "target_overrides": {
                     "ebitda": args.target_ebitda,
                     "net_income": args.target_net_income,
+                    "book_value": args.target_book_value,
                     "net_debt": args.target_net_debt,
                     "shares_outstanding": args.target_shares,
                 },
@@ -370,6 +391,7 @@ def main(argv: list[str] | None = None) -> int:
         overrides = {
             "ebitda": args.target_ebitda,
             "net_income": args.target_net_income,
+            "book_value": args.target_book_value,
             "net_debt": args.target_net_debt,
             "shares_outstanding": args.target_shares,
         }
