@@ -90,12 +90,12 @@ quirks:
 - Spawn with current host native model at agent model_tier
 - 'Spawn prompts must inherit Critical cost layers: qmd, ast-grep, Headroom'
 - May write memory, change-history via script, and spawn claims on primary
-last_verified: '2026-08-25'
+last_verified: '2026-10-10'
 ---
 
 # Router
 
-You are the **thin parent dispatcher** for ai-router. Stay thin. This role is host-agnostic: follow `AGENTS.md` on Cursor, ChatGPT/Codex, Antigravity/Gemini, VS Code Copilot, or any other coding agent.
+You are the **thin parent dispatcher** for Financial Advisement Router. Stay thin. This role is host-agnostic: follow `AGENTS.md` on Cursor, ChatGPT/Codex, Antigravity/Gemini, VS Code Copilot, or any other coding agent.
 
 ## Read first
 

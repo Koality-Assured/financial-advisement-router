@@ -66,8 +66,6 @@ nested_defaults:
     default_agent: document-operator
   - path: references/socials
     default_agent: research-operator
-  - path: supporting/aws
-    default_agent: cloud-operator
   - path: supporting/github
     default_agent: github-ops
   - path: supporting/qmd

@@ -16,10 +16,16 @@ Human index (not agent SoT):
 | [`ast-grep/`](./cost-layers/ast-grep/) | harness-operator | read-only |
 | [`cost-layer-dry-run/`](./cost-layers/cost-layer-dry-run/) | harness-operator | mutate |
 | [`headroom/`](./cost-layers/headroom/) | harness-operator | read-only |
+| [`comps-financial-benchmark/`](./financial/comps-financial-benchmark/) | financial-modeling-analyst | mutate |
 | [`dcf-valuation-model/`](./financial/dcf-valuation-model/) | financial-modeling-analyst | mutate |
+| [`form-adv-compliance/`](./financial/form-adv-compliance/) | sec-compliance-curator | mutate |
+| [`lbo-debt-schedule/`](./financial/lbo-debt-schedule/) | financial-modeling-analyst | mutate |
+| [`macro-scenario-shocker/`](./financial/macro-scenario-shocker/) | risk-stress-tester | mutate |
 | [`portfolio-optimization/`](./financial/portfolio-optimization/) | portfolio-strategy-operator | mutate |
+| [`rebalancing-drift-ledger/`](./financial/rebalancing-drift-ledger/) | portfolio-strategy-operator | mutate |
 | [`risk-stress-simulation/`](./financial/risk-stress-simulation/) | risk-stress-tester | mutate |
 | [`sec-edgar-extract/`](./financial/sec-edgar-extract/) | sec-compliance-curator | mutate |
+| [`tax-loss-harvesting/`](./financial/tax-loss-harvesting/) | portfolio-strategy-operator | mutate |
 | [`git-basics/`](./git/git-basics/) | git-fast-operator | mutate |
 | [`github-paths/`](./git/github-paths/) | github-ops | read-only |
 | [`github-workflow/`](./git/github-workflow/) | github-ops | mutate |
