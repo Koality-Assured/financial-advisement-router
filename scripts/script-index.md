@@ -2,7 +2,7 @@
 doc_kind: routing_map
 canonical_id: script-index
 topics: [scripts, routing]
-generated_at_utc: 2026-09-22T16:02:55Z
+generated_at_utc: 2026-10-10T08:06:53Z
 generator: scripts/routing/generate_script_index.py
 ---
 
@@ -62,7 +62,6 @@ Generated from Python docstring `tags:` / `routing_hints:`. Do not hand-edit —
 | [`sync/propose_core_update.py`](./sync/propose_core_update.py) | `sync`, `harness`, `propose` | propose-core-update, harness-core, pull-request, issue | Propose generic core improvements back to Koality-Assured/ai-harness-core. |
 | [`sync/pull_harness_core.py`](./sync/pull_harness_core.py) | `sync`, `harness`, `pull` | pull-harness-core, core-update, spoke, allowlist | Pull allowlisted ai-harness-core updates into a domain spoke. |
 | [`sync/scaffold_harness.py`](./sync/scaffold_harness.py) | `sync`, `harness`, `scaffold` | scaffold-harness, domain-router, harness-core, spoke | Scaffold a domain harness spoke from generic ai-harness-core. |
-| [`sync/sync_and_push_downstreams.py`](./sync/sync_and_push_downstreams.py) | `sync`, `git`, `export`, `downstream` | sync-and-push, update-downstreams, multi-repo-publish, downstream-repo-update | Automated synchronization, sanitation, commit, and push engine for public downstream repositories. |
 | [`sync/sync_public_repos.py`](./sync/sync_public_repos.py) | `sync`, `security`, `export` | sync, redaction, multi-repo, export, sanitize, wiki-template | Multi-repo synchronization and sanitization/redaction engine for public exports. |
 | [`tests/test_benchmarks.py`](./tests/test_benchmarks.py) | `tests`, `benchmarks`, `cost-layers`, `agents`, `retrieval`, `fleet` | tests, test-benchmarks, cost-estimator, fleet-benchmark, mrr | Unit tests for empirical benchmarking and cost estimation tooling. |
 | [`tests/test_financial_decimal.py`](./tests/test_financial_decimal.py) | `tests`, `financial`, `decimal` | decimal, dcf, portfolio, var, edgar | Deterministic Decimal tests for financial scripts (zero binary-float drift). |
@@ -110,15 +109,13 @@ Generated from Python docstring `tags:` / `routing_hints:`. Do not hand-edit —
 - **decimal:** `financial/dcf_calculator.py`, `financial/monte_carlo_var.py`, `financial/portfolio_optimizer.py`, `tests/test_financial_decimal.py`
 - **distillation:** `research/local_webfetch.py`
 - **docs:** `docs/run_markdownlint.py`, `docs/validate_context_budget.py`, `docs/validate_router_structure.py`, `docs/validate_structure_fast.py`, `tests/test_validate_context_budget.py`, `tests/test_validate_router_structure.py`, `tests/test_validate_structure_fast.py`
-- **downstream:** `sync/sync_and_push_downstreams.py`
 - **dry-run:** `benchmarks/benchmark_agent_fleet.py`
 - **edgar:** `financial/edgar_ingest.py`
 - **eval:** `benchmarks/benchmark_task_eval.py`, `benchmarks/run_benchmark_suite.py`
-- **export:** `sync/sync_and_push_downstreams.py`, `sync/sync_public_repos.py`
+- **export:** `sync/sync_public_repos.py`
 - **financial:** `financial/dcf_calculator.py`, `financial/edgar_ingest.py`, `financial/monte_carlo_var.py`, `financial/portfolio_optimizer.py`, `tests/test_financial_decimal.py`
 - **fleet:** `benchmarks/benchmark_agent_fleet.py`, `benchmarks/run_benchmark_suite.py`, `tests/test_benchmarks.py`
 - **gemini:** `cli/auth/oauth_flows.py`
-- **git:** `sync/sync_and_push_downstreams.py`
 - **github:** `github/resolve_github_path.py`, `repos/scaffold_public_repos.py`, `tests/test_pretty_docs_security.py`
 - **harness:** `cli/auth/keyring_vault.py`, `cli/auth/oauth_flows.py`, `cli/harness.py`, `cli/registry.py`, `cli/schema_adapter.py`, `cli/tui.py`, `sync/propose_core_update.py`, `sync/pull_harness_core.py`, `sync/scaffold_harness.py`, `tests/test_harness_auth.py`, `tests/test_harness_cli.py`, `tests/test_harness_core_sync.py`, `tests/test_harness_registry.py`
 - **headroom:** `benchmarks/benchmark_tool_efficiency.py`, `cost-layers/extract_ast_facts.py`, `cost-layers/validate_ast_grep.py`, `cost-layers/validate_cost_layers.py`, `cost-layers/validate_headroom_compression.py`
@@ -164,7 +161,7 @@ Generated from Python docstring `tags:` / `routing_hints:`. Do not hand-edit —
 - **socials:** `research/community_analyzer.py`, `research/manage_social_registry.py`
 - **subagents:** `tests/test_subagent_context_config.py`
 - **switcher:** `cli/registry.py`, `cli/tui.py`, `tests/test_harness_registry.py`
-- **sync:** `sync/propose_core_update.py`, `sync/pull_harness_core.py`, `sync/scaffold_harness.py`, `sync/sync_and_push_downstreams.py`, `sync/sync_public_repos.py`, `tests/test_harness_core_sync.py`
+- **sync:** `sync/propose_core_update.py`, `sync/pull_harness_core.py`, `sync/scaffold_harness.py`, `sync/sync_public_repos.py`, `tests/test_harness_core_sync.py`
 - **tasks:** `benchmarks/benchmark_task_eval.py`
 - **tests:** `tests/test_benchmarks.py`, `tests/test_financial_decimal.py`, `tests/test_harness_auth.py`, `tests/test_harness_cli.py`, `tests/test_harness_core_sync.py`, `tests/test_harness_registry.py`, `tests/test_hybrid_dispatch.py`, `tests/test_local_webfetch.py`, `tests/test_pacing.py`, `tests/test_pretty_docs_security.py`, `tests/test_qmd_preflight.py`, `tests/test_skill_graph.py`, `tests/test_subagent_context_config.py`, `tests/test_validate_agent.py`, `tests/test_validate_context_budget.py`, `tests/test_validate_prompt_caching.py`, `tests/test_validate_router_structure.py`, `tests/test_validate_skill.py`, `tests/test_validate_structure_fast.py`
 - **tokens:** `benchmarks/benchmark_retrieval.py`, `benchmarks/benchmark_tool_efficiency.py`, `benchmarks/estimate_agent_costs.py`

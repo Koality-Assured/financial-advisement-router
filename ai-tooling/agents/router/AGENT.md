@@ -46,17 +46,23 @@ allowed_tools:
 delegation_targets:
 - ai-tooling-ops
 - artifact-agent
-- as-code-agent
+- benchmark-agent
 - detailed-activity
+- document-operator
 - documentation-ops
+- financial-modeling-analyst
 - git-fast-operator
 - github-ops
+- harness-operator
 - memory-operator
+- portfolio-strategy-operator
 - qmd-ops
 - reference-ops
-- repo-sync-ops
+- research-operator
+- risk-stress-tester
 - router-maintenance
 - script-ops
+- sec-compliance-curator
 prohibitions:
 - execute catalogued skill bodies in-parent except isolate-work CLI
 - load specialist SKILL.md in-parent except isolate-work CLI

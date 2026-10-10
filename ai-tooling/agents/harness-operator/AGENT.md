@@ -2,7 +2,7 @@
 schema_version: 2.0.0
 agent_id: harness-operator
 name: Harness operator
-description: Harness lifecycle, control plane, cost layers, and repository maintenance specialist. Owns skill-builder, skill-dry-run, agent-builder, harness-review, script-builder, scratch-cleanup, headroom, ast-grep, cost-layer-dry-run, qmd-usage, qmd-efficiency, memory-create, memory-adjust, memory-cleanup, model-memory-operate, sync-downstream-repos, and downstream-repo-update. Use when authoring or revising skills and agents, maintaining memory checkpoints, operating cost layers, running repo-level maintenance or hygiene, and synchronizing downstream repositories. Spawned by the router.
+description: Harness lifecycle, control plane, cost layers, and repository maintenance specialist. Owns skill-builder, skill-dry-run, agent-builder, harness-review, script-builder, scratch-cleanup, headroom, ast-grep, cost-layer-dry-run, qmd-usage, qmd-efficiency, memory-create, memory-adjust, memory-cleanup, and model-memory-operate. Use when authoring or revising skills and agents, maintaining memory checkpoints, operating cost layers, and running repo-level maintenance or hygiene. Spawned by the router.
 model_tier: standard
 token_ceiling: 100000
 capabilities:
@@ -11,7 +11,6 @@ capabilities:
 - cost-layer-operations
 - repository-hygiene
 - memory-checkpoint-management
-- downstream-repo-synchronization
 contracts:
   inputs:
   - Target skill, agent, script, memory checkpoint, or maintenance task specification
@@ -44,7 +43,7 @@ last_verified: '2026-09-09'
 
 # Harness operator
 
-Specialist for harness lifecycle, control plane governance, cost layers (`qmd`, `ast-grep`, `headroom`), repository maintenance, skill and agent authoring, memory management, and downstream repository synchronization.
+Specialist for harness lifecycle, control plane governance, cost layers (`qmd`, `ast-grep`, `headroom`), repository maintenance, skill and agent authoring, and memory management.
 
 ## Read first
 
@@ -55,7 +54,7 @@ Specialist for harness lifecycle, control plane governance, cost layers (`qmd`, 
 
 ## Owns
 
-`skill-builder`, `skill-dry-run`, `agent-builder`, `harness-review`, `script-builder`, `scratch-cleanup`, `headroom`, `ast-grep`, `cost-layer-dry-run`, `qmd-usage`, `qmd-efficiency`, `memory-create`, `memory-adjust`, `memory-cleanup`, `model-memory-operate`, `sync-downstream-repos`, `downstream-repo-update`
+`skill-builder`, `skill-dry-run`, `agent-builder`, `harness-review`, `script-builder`, `scratch-cleanup`, `headroom`, `ast-grep`, `cost-layer-dry-run`, `qmd-usage`, `qmd-efficiency`, `memory-create`, `memory-adjust`, `memory-cleanup`, `model-memory-operate`
 
 ## Isolation
 
