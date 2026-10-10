@@ -22,6 +22,7 @@ FINRA_2214_LEGEND = (
 MONEY_QUANT = Decimal("0.01")
 RATE_QUANT = Decimal("0.00000001")
 WEIGHT_QUANT = Decimal("0.00000001")
+MULTIPLE_QUANT = Decimal("0.0001")
 
 
 class FloatLedgerError(TypeError):
@@ -66,6 +67,11 @@ def quantize_rate(value: Decimal) -> Decimal:
 
 def quantize_weight(value: Decimal) -> Decimal:
     return value.quantize(WEIGHT_QUANT, rounding=ROUND_HALF_EVEN)
+
+
+def quantize_multiple(value: Decimal, *, places: int = 4) -> Decimal:
+    quant = Decimal("10") ** -places
+    return value.quantize(quant, rounding=ROUND_HALF_EVEN)
 
 
 def decimal_sum(values: Iterable[Any]) -> Decimal:

@@ -2,7 +2,7 @@
 doc_kind: routing_map
 canonical_id: script-index
 topics: [scripts, routing]
-generated_at_utc: 2026-10-10T08:06:53Z
+generated_at_utc: 2026-10-10T08:17:33Z
 generator: scripts/routing/generate_script_index.py
 ---
 
@@ -38,10 +38,12 @@ Generated from Python docstring `tags:` / `routing_hints:`. Do not hand-edit —
 | [`docs/validate_context_budget.py`](./docs/validate_context_budget.py) | `docs`, `validation`, `cost-layers` | context-budget, tokens, agents-md, ingestibility, ceiling | Validate context budget ceilings and ingestibility rules across repository entry files. |
 | [`docs/validate_router_structure.py`](./docs/validate_router_structure.py) | `docs`, `routing` | router, structure, validation, results-layout | Validate router structure (areas, catalogs, frontmatter, dispatch, results layout). |
 | [`docs/validate_structure_fast.py`](./docs/validate_structure_fast.py) | `docs`, `validation`, `lint` | validate, structure, frontmatter, links, markdown | Fast structural validator for Markdown documents in ai-router. |
+| [`financial/comps_calculator.py`](./financial/comps_calculator.py) | `financial`, `comps`, `multiples`, `valuation`, `decimal` | comps, ev-ebitda, pe-ratio, harmonic-mean, valuation-percentiles, decimal | Comparable company analysis (comps) multiples on Decimal ledgers (advisory only). |
 | [`financial/dcf_calculator.py`](./financial/dcf_calculator.py) | `financial`, `dcf`, `valuation`, `decimal` | dcf, wacc, capm, gordon-growth, sensitivity, decimal | Multi-stage DCF and CAPM WACC on Decimal ledgers (advisory research only). |
 | [`financial/edgar_ingest.py`](./financial/edgar_ingest.py) | `financial`, `edgar`, `xbrl`, `sec` | edgar, companyfacts, 10-k, 10-q, xbrl, rate-limit | Parse SEC company-facts JSON from recorded fixtures (advisory research only). |
 | [`financial/monte_carlo_var.py`](./financial/monte_carlo_var.py) | `financial`, `risk`, `var`, `cvar`, `decimal` | var, cvar, expected-shortfall, monte-carlo, seed, decimal | Historical, parametric, and seeded bootstrap VaR / CVaR (advisory only). |
 | [`financial/portfolio_optimizer.py`](./financial/portfolio_optimizer.py) | `financial`, `portfolio`, `decimal` | mean-variance, sharpe, sortino, efficient-frontier, decimal | Mean-variance portfolio weights on Decimal ledgers (advisory research only). |
+| [`financial/wash_sale_detector.py`](./financial/wash_sale_detector.py) | `financial`, `wash-sale`, `tax-loss`, `compliance`, `decimal` | wash-sale, irc-1091, 61-day-window, tax-loss-harvesting, replacement-etf, decimal | IRC Section 1091 61-day wash-sale detector and tax-loss replacement engine. |
 | [`github/resolve_github_path.py`](./github/resolve_github_path.py) | `github` | blob, main, path, url | Resolve local repo paths to GitHub https blob/tree URLs on main. |
 | [`qmd/qmd_preflight.py`](./qmd/qmd_preflight.py) | `qmd` | preflight, index, onboarding, safety | Inspect reusable qmd state without creating or refreshing an index. |
 | [`qmd/refresh_qmd_index.py`](./qmd/refresh_qmd_index.py) | `qmd` | index, embed, session-end, completion-gate | Refresh an existing local qmd index after explicit user approval. |
@@ -65,6 +67,7 @@ Generated from Python docstring `tags:` / `routing_hints:`. Do not hand-edit —
 | [`sync/sync_public_repos.py`](./sync/sync_public_repos.py) | `sync`, `security`, `export` | sync, redaction, multi-repo, export, sanitize, wiki-template | Multi-repo synchronization and sanitization/redaction engine for public exports. |
 | [`tests/test_benchmarks.py`](./tests/test_benchmarks.py) | `tests`, `benchmarks`, `cost-layers`, `agents`, `retrieval`, `fleet` | tests, test-benchmarks, cost-estimator, fleet-benchmark, mrr | Unit tests for empirical benchmarking and cost estimation tooling. |
 | [`tests/test_financial_decimal.py`](./tests/test_financial_decimal.py) | `tests`, `financial`, `decimal` | decimal, dcf, portfolio, var, edgar | Deterministic Decimal tests for financial scripts (zero binary-float drift). |
+| [`tests/test_financial_scripts.py`](./tests/test_financial_scripts.py) | `tests`, `financial`, `decimal` | tests, dcf, var, portfolio, edgar, comps, wash-sale, decimal | Comprehensive tests for financial valuation, risk, portfolio, comps, and compliance scripts. |
 | [`tests/test_harness_auth.py`](./tests/test_harness_auth.py) | `tests`, `harness`, `cli`, `auth`, `keyring`, `oauth`, `security` | tests, auth, keyring, vault, oauth, pkce, sanitization | Unit tests for Harness CLI Universal Auth Subsystem and Keyring Manager. |
 | [`tests/test_harness_cli.py`](./tests/test_harness_cli.py) | `tests`, `harness`, `cli`, `isolation` | tests, harness-cli, status, branch, agent, pr, clean | Unit tests for the in-repo Harness CLI control plane. |
 | [`tests/test_harness_core_sync.py`](./tests/test_harness_core_sync.py) | `tests`, `sync`, `harness` | tests, scaffold-harness, pull-harness-core, propose-core-update | Tests for core-spoke harness protocol scripts. |
@@ -98,7 +101,9 @@ Generated from Python docstring `tags:` / `routing_hints:`. Do not hand-edit —
 - **cli:** `cli/auth/keyring_vault.py`, `cli/auth/oauth_flows.py`, `cli/harness.py`, `cli/registry.py`, `cli/schema_adapter.py`, `cli/tui.py`, `tests/test_harness_auth.py`, `tests/test_harness_cli.py`
 - **coding-agent:** `benchmarks/benchmark_task_eval.py`
 - **communities:** `research/community_analyzer.py`, `research/manage_social_registry.py`
+- **compliance:** `financial/wash_sale_detector.py`
 - **compression:** `benchmarks/benchmark_tool_efficiency.py`
+- **comps:** `financial/comps_calculator.py`
 - **config:** `tests/test_subagent_context_config.py`
 - **context:** `tests/test_subagent_context_config.py`
 - **cost-layers:** `benchmarks/benchmark_tool_efficiency.py`, `benchmarks/estimate_agent_costs.py`, `benchmarks/run_benchmark_suite.py`, `cost-layers/validate_cost_layers.py`, `cost-layers/validate_headroom_compression.py`, `cost-layers/validate_prompt_caching.py`, `docs/validate_context_budget.py`, `qmd/validate_qmd_retrieval.py`, `research/local_webfetch.py`, `tests/test_benchmarks.py`, `tests/test_local_webfetch.py`, `tests/test_validate_context_budget.py`, `tests/test_validate_prompt_caching.py`
@@ -106,14 +111,14 @@ Generated from Python docstring `tags:` / `routing_hints:`. Do not hand-edit —
 - **cvar:** `financial/monte_carlo_var.py`
 - **dag:** `routing/resolve_skill_graph.py`, `tests/test_skill_graph.py`
 - **dcf:** `financial/dcf_calculator.py`
-- **decimal:** `financial/dcf_calculator.py`, `financial/monte_carlo_var.py`, `financial/portfolio_optimizer.py`, `tests/test_financial_decimal.py`
+- **decimal:** `financial/comps_calculator.py`, `financial/dcf_calculator.py`, `financial/monte_carlo_var.py`, `financial/portfolio_optimizer.py`, `financial/wash_sale_detector.py`, `tests/test_financial_decimal.py`, `tests/test_financial_scripts.py`
 - **distillation:** `research/local_webfetch.py`
 - **docs:** `docs/run_markdownlint.py`, `docs/validate_context_budget.py`, `docs/validate_router_structure.py`, `docs/validate_structure_fast.py`, `tests/test_validate_context_budget.py`, `tests/test_validate_router_structure.py`, `tests/test_validate_structure_fast.py`
 - **dry-run:** `benchmarks/benchmark_agent_fleet.py`
 - **edgar:** `financial/edgar_ingest.py`
 - **eval:** `benchmarks/benchmark_task_eval.py`, `benchmarks/run_benchmark_suite.py`
 - **export:** `sync/sync_public_repos.py`
-- **financial:** `financial/dcf_calculator.py`, `financial/edgar_ingest.py`, `financial/monte_carlo_var.py`, `financial/portfolio_optimizer.py`, `tests/test_financial_decimal.py`
+- **financial:** `financial/comps_calculator.py`, `financial/dcf_calculator.py`, `financial/edgar_ingest.py`, `financial/monte_carlo_var.py`, `financial/portfolio_optimizer.py`, `financial/wash_sale_detector.py`, `tests/test_financial_decimal.py`, `tests/test_financial_scripts.py`
 - **fleet:** `benchmarks/benchmark_agent_fleet.py`, `benchmarks/run_benchmark_suite.py`, `tests/test_benchmarks.py`
 - **gemini:** `cli/auth/oauth_flows.py`
 - **github:** `github/resolve_github_path.py`, `repos/scaffold_public_repos.py`, `tests/test_pretty_docs_security.py`
@@ -129,6 +134,7 @@ Generated from Python docstring `tags:` / `routing_hints:`. Do not hand-edit —
 - **memory:** `ai-tooling/model_memory.py`
 - **models:** `research/benchlm_lookup.py`
 - **multi-harness:** `cli/registry.py`, `cli/schema_adapter.py`
+- **multiples:** `financial/comps_calculator.py`
 - **oauth:** `cli/auth/oauth_flows.py`, `tests/test_harness_auth.py`
 - **openai:** `cli/auth/oauth_flows.py`
 - **orchestration:** `benchmarks/run_benchmark_suite.py`
@@ -163,13 +169,15 @@ Generated from Python docstring `tags:` / `routing_hints:`. Do not hand-edit —
 - **switcher:** `cli/registry.py`, `cli/tui.py`, `tests/test_harness_registry.py`
 - **sync:** `sync/propose_core_update.py`, `sync/pull_harness_core.py`, `sync/scaffold_harness.py`, `sync/sync_public_repos.py`, `tests/test_harness_core_sync.py`
 - **tasks:** `benchmarks/benchmark_task_eval.py`
-- **tests:** `tests/test_benchmarks.py`, `tests/test_financial_decimal.py`, `tests/test_harness_auth.py`, `tests/test_harness_cli.py`, `tests/test_harness_core_sync.py`, `tests/test_harness_registry.py`, `tests/test_hybrid_dispatch.py`, `tests/test_local_webfetch.py`, `tests/test_pacing.py`, `tests/test_pretty_docs_security.py`, `tests/test_qmd_preflight.py`, `tests/test_skill_graph.py`, `tests/test_subagent_context_config.py`, `tests/test_validate_agent.py`, `tests/test_validate_context_budget.py`, `tests/test_validate_prompt_caching.py`, `tests/test_validate_router_structure.py`, `tests/test_validate_skill.py`, `tests/test_validate_structure_fast.py`
+- **tax-loss:** `financial/wash_sale_detector.py`
+- **tests:** `tests/test_benchmarks.py`, `tests/test_financial_decimal.py`, `tests/test_financial_scripts.py`, `tests/test_harness_auth.py`, `tests/test_harness_cli.py`, `tests/test_harness_core_sync.py`, `tests/test_harness_registry.py`, `tests/test_hybrid_dispatch.py`, `tests/test_local_webfetch.py`, `tests/test_pacing.py`, `tests/test_pretty_docs_security.py`, `tests/test_qmd_preflight.py`, `tests/test_skill_graph.py`, `tests/test_subagent_context_config.py`, `tests/test_validate_agent.py`, `tests/test_validate_context_budget.py`, `tests/test_validate_prompt_caching.py`, `tests/test_validate_router_structure.py`, `tests/test_validate_skill.py`, `tests/test_validate_structure_fast.py`
 - **tokens:** `benchmarks/benchmark_retrieval.py`, `benchmarks/benchmark_tool_efficiency.py`, `benchmarks/estimate_agent_costs.py`
 - **tui:** `cli/tui.py`, `tests/test_harness_registry.py`
 - **validation:** `docs/validate_context_budget.py`, `docs/validate_structure_fast.py`, `tests/test_validate_context_budget.py`, `tests/test_validate_router_structure.py`, `tests/test_validate_structure_fast.py`
-- **valuation:** `financial/dcf_calculator.py`
+- **valuation:** `financial/comps_calculator.py`, `financial/dcf_calculator.py`
 - **var:** `financial/monte_carlo_var.py`
 - **vault:** `cli/auth/keyring_vault.py`
+- **wash-sale:** `financial/wash_sale_detector.py`
 - **web:** `research/local_webfetch.py`
 - **webfetch:** `tests/test_local_webfetch.py`
 - **xbrl:** `financial/edgar_ingest.py`

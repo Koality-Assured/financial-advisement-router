@@ -274,7 +274,7 @@ def main(argv: list[str] | None = None) -> int:
                 "note": ADVISORY_STAMP,
             }
         )
-        print(json.dumps(plan, indent=2) if args.json else plan["note"])
+        print(json.dumps(plan, indent=2))
         return 0
     try:
         fixture = load_fixture(fixture_path)

@@ -1,0 +1,99 @@
+{
+  "account": "Taxable-Brokerage-001",
+  "tax_year": 2026,
+  "currency": "USD",
+  "transactions": [
+    {
+      "trade_id": "T01-SPY-BUY",
+      "date": "2026-01-15",
+      "symbol": "SPY",
+      "action": "BUY",
+      "quantity": "100",
+      "price": "510.00"
+    },
+    {
+      "trade_id": "T02-SPY-SELL-LOSS",
+      "date": "2026-02-15",
+      "symbol": "SPY",
+      "action": "SELL",
+      "quantity": "100",
+      "price": "480.00",
+      "cost_basis_per_share": "510.00"
+    },
+    {
+      "trade_id": "T03-SPY-BUY-WASH",
+      "date": "2026-03-01",
+      "symbol": "SPY",
+      "action": "BUY",
+      "quantity": "100",
+      "price": "485.00"
+    },
+    {
+      "trade_id": "T04-AAPL-BUY1",
+      "date": "2026-01-10",
+      "symbol": "AAPL",
+      "action": "BUY",
+      "quantity": "50",
+      "price": "195.00"
+    },
+    {
+      "trade_id": "T05-AAPL-BUY2-PRIOR",
+      "date": "2026-01-25",
+      "symbol": "AAPL",
+      "action": "BUY",
+      "quantity": "50",
+      "price": "180.00"
+    },
+    {
+      "trade_id": "T06-AAPL-SELL-LOSS",
+      "date": "2026-02-10",
+      "symbol": "AAPL",
+      "action": "SELL",
+      "quantity": "50",
+      "price": "175.00",
+      "cost_basis_per_share": "195.00"
+    },
+    {
+      "trade_id": "T07-QQQ-BUY",
+      "date": "2026-02-01",
+      "symbol": "QQQ",
+      "action": "BUY",
+      "quantity": "100",
+      "price": "460.00"
+    },
+    {
+      "trade_id": "T08-QQQ-SELL-LOSS",
+      "date": "2026-03-10",
+      "symbol": "QQQ",
+      "action": "SELL",
+      "quantity": "100",
+      "price": "430.00",
+      "cost_basis_per_share": "460.00"
+    },
+    {
+      "trade_id": "T09-QQQ-BUY-PARTIAL",
+      "date": "2026-03-22",
+      "symbol": "QQQ",
+      "action": "BUY",
+      "quantity": "40",
+      "price": "435.00"
+    },
+    {
+      "trade_id": "T10-MSFT-BUY",
+      "date": "2026-01-05",
+      "symbol": "MSFT",
+      "action": "BUY",
+      "quantity": "200",
+      "price": "425.00"
+    },
+    {
+      "trade_id": "T11-MSFT-SELL-CLEAN-LOSS",
+      "date": "2026-04-10",
+      "symbol": "MSFT",
+      "action": "SELL",
+      "quantity": "200",
+      "price": "395.00",
+      "cost_basis_per_share": "425.00"
+    }
+  ]
+}
