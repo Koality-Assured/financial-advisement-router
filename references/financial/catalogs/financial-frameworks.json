@@ -1,0 +1,105 @@
+{
+  "version": "1.0.0",
+  "generated_at_utc": "2026-08-28T16:00:00Z",
+  "framework_family": "financial",
+  "description": "Compact machine catalog of financial regulatory and security frameworks",
+  "frameworks": [
+    {
+      "id": "sox-itgc",
+      "name": "Sarbanes-Oxley Act IT General Controls",
+      "regulator": "SEC / PCAOB",
+      "standard_basis": "COSO 2013 / PCAOB AS 2201",
+      "domains": [
+        { "id": "ITGC-LA", "name": "Logical Access & Identity Management", "focus": "Provisioning, Deprovisioning, User Access Reviews, PAM, SOD" },
+        { "id": "ITGC-CM", "name": "Change Management & SDLC", "focus": "Ticket Authorizations, Testing Isolation, Production Deployment Separation" },
+        { "id": "ITGC-OPS", "name": "System Operations & Data Resilience", "focus": "Batch Job Scheduling, Backup Restorations, Disaster Recovery" },
+        { "id": "ITAC", "name": "IT Application Controls", "focus": "Input Validation, Processing Integrity, Interface Reconciliations" }
+      ]
+    },
+    {
+      "id": "pci-dss-v4",
+      "name": "Payment Card Industry Data Security Standard v4.0.1",
+      "regulator": "PCI Security Standards Council",
+      "standard_basis": "PCI DSS v4.0.1",
+      "goals": [
+        {
+          "id": "G1",
+          "title": "Build and Maintain a Secure Network and Systems",
+          "requirements": ["Req 1: Network Security Controls", "Req 2: Secure Configurations"]
+        },
+        {
+          "id": "G2",
+          "title": "Protect Account Data",
+          "requirements": ["Req 3: Protect Stored Account Data", "Req 4: Protect CHD with Strong Cryptography in Transit"]
+        },
+        {
+          "id": "G3",
+          "title": "Maintain a Vulnerability Management Program",
+          "requirements": ["Req 5: Protect from Malicious Software", "Req 6: Develop Secure Systems and Software"]
+        },
+        {
+          "id": "G4",
+          "title": "Implement Strong Access Control Measures",
+          "requirements": ["Req 7: Restrict Access by Need to Know", "Req 8: Identify and Authenticate Access (MFA)", "Req 9: Restrict Physical Access"]
+        },
+        {
+          "id": "G5",
+          "title": "Regularly Monitor and Test Networks",
+          "requirements": ["Req 10: Log and Monitor All Access", "Req 11: Test Security of Systems Regularly"]
+        },
+        {
+          "id": "G6",
+          "title": "Maintain an Information Security Policy",
+          "requirements": ["Req 12: Support Information Security with Policies and Programs"]
+        }
+      ]
+    },
+    {
+      "id": "glba-safeguards",
+      "name": "FTC Safeguards Rule (16 CFR Part 314)",
+      "regulator": "Federal Trade Commission (FTC)",
+      "standard_basis": "15 U.S.C. §§ 6801-6809 / 16 CFR Part 314",
+      "mandates": [
+        "Qualified Individual Oversight (§ 314.4(a))",
+        "Written Risk Assessment (§ 314.4(b))",
+        "Access Controls & Data Inventory (§ 314.4(c)(1-2))",
+        "Data Encryption at Rest and in Transit (§ 314.4(c)(3))",
+        "Multi-Factor Authentication (§ 314.4(c)(5))",
+        "Continuous Monitoring or Pentest/Vuln Scans (§ 314.4(d))",
+        "Third-Party Service Provider Oversight (§ 314.4(f))",
+        "Written Incident Response Plan (§ 314.4(h))",
+        "Annual Board Report (§ 314.4(i))",
+        "30-Day Mandatory Breach Notification for 500+ Consumers (§ 314.4(j))"
+      ]
+    },
+    {
+      "id": "ffiec-cat",
+      "name": "FFIEC Cybersecurity Assessment Tool",
+      "regulator": "FFIEC (FRB, FDIC, OCC, NCUA, CFPB)",
+      "standard_basis": "FFIEC IT Examination Handbooks",
+      "domains": [
+        { "id": "D1", "name": "Cyber Risk Management & Oversight" },
+        { "id": "D2", "name": "Threat Intelligence & Collaboration" },
+        { "id": "D3", "name": "Cybersecurity Controls" },
+        { "id": "D4", "name": "External Dependency Management" },
+        { "id": "D5", "name": "Cyber Incident Management & Resilience" }
+      ],
+      "maturity_levels": ["Baseline", "Evolving", "Intermediate", "Advanced", "Innovative"]
+    },
+    {
+      "id": "nydfs-500",
+      "name": "NYDFS Cybersecurity Requirements for Financial Services (23 NYCRR 500)",
+      "regulator": "New York State Department of Financial Services",
+      "standard_basis": "23 NYCRR Part 500 (Second Amendment)",
+      "key_controls": [
+        "Designated CISO and Board Oversight (§ 500.4)",
+        "Heightened Class A Obligations (Annual Audit, PAM, EDR) (§ 500.2, § 500.7)",
+        "Mandatory Multi-Factor Authentication (§ 500.12)",
+        "Annual Penetration Testing and Vulnerability Management (§ 500.5)",
+        "72-Hour Cybersecurity Incident Notice to Superintendent (§ 500.17(a))",
+        "24-Hour Extortion Payment Notification (§ 500.17(c))",
+        "Annual Compliance Certification by April 15 (§ 500.17(b))"
+      ]
+    }
+  ]
+}

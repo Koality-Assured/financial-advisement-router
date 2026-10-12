@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0",
+  "standards_source": "financial-representations.md",
+  "purpose": "Machine-readable route, alias, and check-profile index for the quantitative financial representation matrix.",
+  "check_profiles": {
+    "decimal_ledger": "Strict Decimal type enforcement, rounding mode verification, exact conservation of balance",
+    "gips_performance": "Time-weighted total return, asset-weighted compounding, net-of-fees presentation",
+    "var_cvar_metric": "95%/99% VaR and CVaR calculations, explicit PRNG seed verification, tail risk metrics",
+    "xbrl_integrity": "GAAP taxonomy element matching, instant vs duration fact consistency, CIK alignment",
+    "reg_bi_compliance": "Presence of mandatory non-discretionary advisory legend and FINRA 2214 disclosure"
+  },
+  "representations": [
+    {
+      "id": "portfolio_allocation",
+      "standard_heading": "Portfolio allocations and weights",
+      "aliases": ["portfolio", "asset_allocation", "mean_variance", "weights"],
+      "adjacent_routes": ["var_risk_simulation", "rebalancing_drift"],
+      "default_check_profiles": ["decimal_ledger", "reg_bi_compliance"],
+      "asset_types": [
+        {"id": "mean_variance_weights", "aliases": ["efficient_frontier"], "check_profiles": ["decimal_ledger", "reg_bi_compliance"]},
+        {"id": "black_litterman_weights", "aliases": ["bl_allocation"], "check_profiles": ["decimal_ledger", "reg_bi_compliance"]}
+      ]
+    },
+    {
+      "id": "dcf_schedule",
+      "standard_heading": "Discounted cash flow valuation schedules",
+      "aliases": ["dcf", "valuation", "wacc_model", "cash_flow_schedule"],
+      "adjacent_routes": ["three_statement_model", "comps_benchmark"],
+      "default_check_profiles": ["decimal_ledger", "reg_bi_compliance"],
+      "asset_types": [
+        {"id": "unlevered_dcf", "aliases": ["fcff_model"], "check_profiles": ["decimal_ledger", "reg_bi_compliance"]},
+        {"id": "levered_dcf", "aliases": ["fcfe_model"], "check_profiles": ["decimal_ledger", "reg_bi_compliance"]}
+      ]
+    },
+    {
+      "id": "var_risk_simulation",
+      "standard_heading": "Value-at-risk and stress simulations",
+      "aliases": ["var", "cvar", "risk_simulation", "monte_carlo_var"],
+      "adjacent_routes": ["portfolio_allocation", "dcf_schedule"],
+      "default_check_profiles": ["var_cvar_metric", "reg_bi_compliance"],
+      "asset_types": [
+        {"id": "monte_carlo_var_output", "aliases": ["mc_var"], "check_profiles": ["var_cvar_metric", "reg_bi_compliance"]},
+        {"id": "historical_var_output", "aliases": ["hist_var"], "check_profiles": ["var_cvar_metric", "reg_bi_compliance"]},
+        {"id": "parametric_var_output", "aliases": ["gaussian_var"], "check_profiles": ["var_cvar_metric", "reg_bi_compliance"]}
+      ]
+    },
+    {
+      "id": "three_statement_model",
+      "standard_heading": "Three-statement financial accounting models",
+      "aliases": ["accounting_model", "income_balance_cashflow", "financial_statements"],
+      "adjacent_routes": ["dcf_schedule", "sec_xbrl_statement"],
+      "default_check_profiles": ["decimal_ledger", "reg_bi_compliance"],
+      "asset_types": [
+        {"id": "full_three_statement", "aliases": ["3_statement"], "check_profiles": ["decimal_ledger", "reg_bi_compliance"]},
+        {"id": "balance_sheet_schedule", "aliases": ["balance_sheet"], "check_profiles": ["decimal_ledger"]}
+      ]
+    },
+    {
+      "id": "sec_xbrl_statement",
+      "standard_heading": "SEC EDGAR XBRL filings and facts",
+      "aliases": ["edgar", "xbrl", "sec_filing", "company_facts"],
+      "adjacent_routes": ["three_statement_model", "comps_benchmark"],
+      "default_check_profiles": ["xbrl_integrity"],
+      "asset_types": [
+        {"id": "company_facts_json", "aliases": ["xbrl_facts"], "check_profiles": ["xbrl_integrity"]},
+        {"id": "ten_k_financials", "aliases": ["10k_facts"], "check_profiles": ["xbrl_integrity"]}
+      ]
+    },
+    {
+      "id": "rebalancing_drift",
+      "standard_heading": "Portfolio drift and rebalancing ledgers",
+      "aliases": ["rebalancing", "drift_ledger", "portfolio_rebalance"],
+      "adjacent_routes": ["portfolio_allocation", "tax_loss_harvest"],
+      "default_check_profiles": ["decimal_ledger", "reg_bi_compliance"],
+      "asset_types": [
+        {"id": "drift_report", "aliases": ["drift_ledger"], "check_profiles": ["decimal_ledger", "reg_bi_compliance"]},
+        {"id": "rebalance_trade_list", "aliases": ["rebalance_plan"], "check_profiles": ["decimal_ledger", "reg_bi_compliance"]}
+      ]
+    },
+    {
+      "id": "tax_loss_harvest",
+      "standard_heading": "Tax-loss harvesting and wash-sale ledgers",
+      "aliases": ["tlh", "wash_sale", "tax_ledger"],
+      "adjacent_routes": ["rebalancing_drift", "portfolio_allocation"],
+      "default_check_profiles": ["decimal_ledger", "reg_bi_compliance"],
+      "asset_types": [
+        {"id": "wash_sale_detection_report", "aliases": ["wash_sale_report"], "check_profiles": ["decimal_ledger", "reg_bi_compliance"]},
+        {"id": "loss_harvest_ledger", "aliases": ["tlh_ledger"], "check_profiles": ["decimal_ledger", "reg_bi_compliance"]}
+      ]
+    },
+    {
+      "id": "comps_benchmark",
+      "standard_heading": "Comparable company and multiple benchmarks",
+      "aliases": ["comps", "peer_multiples", "ev_ebitda_bench"],
+      "adjacent_routes": ["dcf_schedule", "sec_xbrl_statement"],
+      "default_check_profiles": ["decimal_ledger", "reg_bi_compliance"],
+      "asset_types": [
+        {"id": "trading_comps_table", "aliases": ["peer_comps"], "check_profiles": ["decimal_ledger", "reg_bi_compliance"]},
+        {"id": "transaction_comps_table", "aliases": ["deal_comps"], "check_profiles": ["decimal_ledger", "reg_bi_compliance"]}
+      ]
+    }
+  ]
+}
