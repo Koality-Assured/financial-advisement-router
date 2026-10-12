@@ -10,41 +10,37 @@ import argparse
 import json
 import math
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 _LIB = Path(__file__).resolve().parents[1] / "_lib"
 sys.path.insert(0, str(_LIB))
-from md import (
-    agent_paths,
-    parse_frontmatter,
-    skill_paths,
-)
-from paths import REPO_ROOT as ROOT
+from md import agent_paths, load_agent_record, load_skill_record, parse_frontmatter, skill_paths  # noqa: E402
+from paths import REPO_ROOT as ROOT  # noqa: E402
 
 # Standard pricing models per 1M tokens (USD)
 DEFAULT_PRICING_TABLE: dict[str, dict[str, Any]] = {
     "fast": {
-        "description": "Cheapest fastest model tier (Composer 2.5 / Gemini Flash Lite / Claude 3.5 Haiku / GPT-4o mini)",
+        "description": "Cheapest fastest model tier (Gemini 3.7 Flash / Claude 3.5 Haiku / GPT-4o mini)",
         "input_per_m": 0.15,
         "cached_input_per_m": 0.0375,
         "output_per_m": 0.60,
     },
     "standard": {
-        "description": "Standard tier (Gemini 3.8 Flash / GPT 6.0 Luna / Claude 5.5 Sonnet / Grok 4.7 256k)",
-        "input_per_m": 1.00,
-        "cached_input_per_m": 0.20,
-        "output_per_m": 4.00,
+        "description": "Standard tier (Gemini 3.7 Flash / GPT Luna / Grok 4.5)",
+        "input_per_m": 1.25,
+        "cached_input_per_m": 0.30,
+        "output_per_m": 5.00,
     },
     "high": {
-        "description": "High reasoning tier (Claude 5.5 Sonnet Thinking / GPT Terra / Grok 4.7 500k Fast)",
-        "input_per_m": 2.50,
-        "cached_input_per_m": 0.25,
-        "output_per_m": 10.00,
+        "description": "High reasoning tier (Claude 3.7 Sonnet / GPT Terra / Grok 4.6)",
+        "input_per_m": 3.00,
+        "cached_input_per_m": 0.30,
+        "output_per_m": 15.00,
     },
     "max": {
-        "description": "Max capability tier (Gemini 3.8 Pro / GPT Sol / Claude 5.5 Opus / Grok 4.7 Extra High Fast)",
+        "description": "Max capability tier (Gemini 3.1 Pro / GPT Sol / Claude Extended Thinking)",
         "input_per_m": 5.00,
         "cached_input_per_m": 1.25,
         "output_per_m": 25.00,
@@ -54,83 +50,20 @@ DEFAULT_PRICING_TABLE: dict[str, dict[str, Any]] = {
 # Provider-specific pricing presets
 PROVIDER_PRICING: dict[str, dict[str, dict[str, float]]] = {
     "google": {
-        "gemini-3-8-flash": {
-            "input_per_m": 0.15,
-            "cached_input_per_m": 0.0375,
-            "output_per_m": 0.60,
-        },
-        "gemini-3-8-pro": {
-            "input_per_m": 1.25,
-            "cached_input_per_m": 0.3125,
-            "output_per_m": 5.00,
-        },
+        "gemini-3-7-flash": {"input_per_m": 0.15, "cached_input_per_m": 0.0375, "output_per_m": 0.60},
+        "gemini-3-1-pro": {"input_per_m": 1.25, "cached_input_per_m": 0.3125, "output_per_m": 5.00},
     },
     "anthropic": {
-        "claude-3-5-haiku": {
-            "input_per_m": 0.25,
-            "cached_input_per_m": 0.025,
-            "output_per_m": 1.25,
-        },
-        "claude-5-5-sonnet": {
-            "input_per_m": 1.50,
-            "cached_input_per_m": 0.15,
-            "output_per_m": 6.00,
-        },
-        "claude-5-5-opus": {
-            "input_per_m": 5.00,
-            "cached_input_per_m": 1.25,
-            "output_per_m": 25.00,
-        },
+        "claude-3-5-haiku": {"input_per_m": 0.80, "cached_input_per_m": 0.08, "output_per_m": 4.00},
+        "claude-3-7-sonnet": {"input_per_m": 3.00, "cached_input_per_m": 0.30, "output_per_m": 15.00},
     },
     "openai": {
-        "gpt-4o-mini": {
-            "input_per_m": 0.15,
-            "cached_input_per_m": 0.075,
-            "output_per_m": 0.60,
-        },
-        "gpt-6-0-luna": {
-            "input_per_m": 1.25,
-            "cached_input_per_m": 0.30,
-            "output_per_m": 5.00,
-        },
-        "gpt-terra": {
-            "input_per_m": 2.50,
-            "cached_input_per_m": 0.60,
-            "output_per_m": 10.00,
-        },
-        "gpt-sol": {
-            "input_per_m": 5.00,
-            "cached_input_per_m": 1.25,
-            "output_per_m": 20.00,
-        },
-    },
-    "cursor": {
-        "composer-2-5": {
-            "input_per_m": 0.15,
-            "cached_input_per_m": 0.0375,
-            "output_per_m": 0.60,
-        },
-        "cursor-grok-4-7-standard": {
-            "input_per_m": 1.00,
-            "cached_input_per_m": 0.20,
-            "output_per_m": 4.00,
-        },
-        "cursor-grok-4-7-high": {
-            "input_per_m": 2.50,
-            "cached_input_per_m": 0.50,
-            "output_per_m": 10.00,
-        },
-        "cursor-grok-4-7-max": {
-            "input_per_m": 5.00,
-            "cached_input_per_m": 1.00,
-            "output_per_m": 20.00,
-        },
+        "gpt-4o-mini": {"input_per_m": 0.15, "cached_input_per_m": 0.075, "output_per_m": 0.60},
+        "gpt-5-4-turbo": {"input_per_m": 2.50, "cached_input_per_m": 1.25, "output_per_m": 10.00},
     },
 }
 
-TOOL_SCHEMA_TOKEN_ESTIMATE = (
-    160  # Average token footprint per allowed tool schema definition
-)
+TOOL_SCHEMA_TOKEN_ESTIMATE = 160  # Average token footprint per allowed tool schema definition
 
 
 def estimate_tokens(text: str) -> int:
@@ -252,16 +185,14 @@ def compute_trajectory_cost(
             + (turn_out / 1_000_000 * out_price)
         )
 
-        turn_details.append(
-            {
-                "turn": turn,
-                "cached_input_tokens": cached_turn_in,
-                "uncached_input_tokens": uncached_turn_in,
-                "output_tokens": turn_out,
-                "context_tokens_end": accumulated_context,
-                "turn_cost_usd": round(turn_cost, 6),
-            }
-        )
+        turn_details.append({
+            "turn": turn,
+            "cached_input_tokens": cached_turn_in,
+            "uncached_input_tokens": uncached_turn_in,
+            "output_tokens": turn_out,
+            "context_tokens_end": accumulated_context,
+            "turn_cost_usd": round(turn_cost, 6),
+        })
 
     # Cost with KV Caching
     cost_with_cache = (
@@ -271,14 +202,13 @@ def compute_trajectory_cost(
     )
 
     # Cost without KV Caching (if every turn paid full input price)
-    cost_without_cache = (total_input_tokens / 1_000_000 * in_price) + (
-        total_output_tokens / 1_000_000 * out_price
+    cost_without_cache = (
+        (total_input_tokens / 1_000_000 * in_price)
+        + (total_output_tokens / 1_000_000 * out_price)
     )
 
     savings_usd = max(0.0, cost_without_cache - cost_with_cache)
-    savings_pct = round(
-        (savings_usd / cost_without_cache * 100) if cost_without_cache > 0 else 0, 1
-    )
+    savings_pct = round((savings_usd / cost_without_cache * 100) if cost_without_cache > 0 else 0, 1)
 
     return {
         "turns": turns,
@@ -318,9 +248,7 @@ def estimate_agent_and_skill(
         skill_tokens = skill_info["skill_tokens"]
 
     effective_tier = tier or agent_info["model_tier"]
-    pricing = DEFAULT_PRICING_TABLE.get(
-        effective_tier, DEFAULT_PRICING_TABLE["standard"]
-    )
+    pricing = DEFAULT_PRICING_TABLE.get(effective_tier, DEFAULT_PRICING_TABLE["standard"])
 
     static_prefix = agent_info["static_prefix_tokens"] + skill_tokens
 
@@ -344,9 +272,7 @@ def estimate_agent_and_skill(
             "savings_pct": t_traj["kv_cache_savings_pct"],
         }
 
-    headroom_remaining = max(
-        0, agent_info["token_ceiling"] - trajectory["final_context_tokens"]
-    )
+    headroom_remaining = max(0, agent_info["token_ceiling"] - trajectory["final_context_tokens"])
     headroom_pct = round((headroom_remaining / agent_info["token_ceiling"]) * 100, 1)
 
     return {
@@ -362,11 +288,9 @@ def estimate_agent_and_skill(
     }
 
 
-def render_markdown_report(
-    estimates: list[dict[str, Any]], title: str = "Agent & Paired Skill Cost Estimation"
-) -> str:
+def render_markdown_report(estimates: list[dict[str, Any]], title: str = "Agent & Paired Skill Cost Estimation") -> str:
     """Render a structured Markdown report."""
-    now_utc = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     lines = [
         "---",
         "doc_kind: result",
@@ -398,15 +322,13 @@ def render_markdown_report(
             f"{traj['kv_cache_savings_pct']}% | {est['headroom_pct']}% |"
         )
 
-    lines.extend(
-        [
-            "",
-            "## Model Tier Pricing Reference",
-            "",
-            "| Tier | Input / 1M | Cached Input / 1M | Output / 1M | Example Host Models |",
-            "| --- | --- | --- | --- | --- |",
-        ]
-    )
+    lines.extend([
+        "",
+        "## Model Tier Pricing Reference",
+        "",
+        "| Tier | Input / 1M | Cached Input / 1M | Output / 1M | Example Host Models |",
+        "| --- | --- | --- | --- | --- |",
+    ])
     for tier_name, tier_info in DEFAULT_PRICING_TABLE.items():
         lines.append(
             f"| `{tier_name}` | ${tier_info['input_per_m']:.2f} | ${tier_info['cached_input_per_m']:.4f} | "
@@ -419,28 +341,14 @@ def render_markdown_report(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--agent", help="Agent ID to evaluate (e.g. benchmark-agent, router)"
-    )
-    parser.add_argument(
-        "--skill", help="Optional paired skill name to evaluate together"
-    )
-    parser.add_argument(
-        "--all", action="store_true", help="Evaluate all registered agents"
-    )
-    parser.add_argument(
-        "--tier", choices=list(DEFAULT_PRICING_TABLE.keys()), help="Override model tier"
-    )
-    parser.add_argument(
-        "--turns", type=int, default=5, help="Number of turns to simulate (default: 5)"
-    )
-    parser.add_argument(
-        "--json", action="store_true", help="Print machine-readable JSON output"
-    )
+    parser.add_argument("--agent", help="Agent ID to evaluate (e.g. benchmark-agent, router)")
+    parser.add_argument("--skill", help="Optional paired skill name to evaluate together")
+    parser.add_argument("--all", action="store_true", help="Evaluate all registered agents")
+    parser.add_argument("--tier", choices=list(DEFAULT_PRICING_TABLE.keys()), help="Override model tier")
+    parser.add_argument("--turns", type=int, default=5, help="Number of turns to simulate (default: 5)")
+    parser.add_argument("--json", action="store_true", help="Print machine-readable JSON output")
     parser.add_argument("--out", help="Output directory under repo root")
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Run estimation without writing reports"
-    )
+    parser.add_argument("--dry-run", action="store_true", help="Run estimation without writing reports")
     args = parser.parse_args(argv)
 
     if not args.agent and not args.all:
@@ -453,10 +361,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.agent:
         matched = [f for f in agent_files if f.parent.name == args.agent]
         if not matched:
-            print(
-                f"error: agent '{args.agent}' not found under ai-tooling/agents/",
-                file=sys.stderr,
-            )
+            print(f"error: agent '{args.agent}' not found under ai-tooling/agents/", file=sys.stderr)
             return 2
         target_files = matched
     else:
@@ -481,9 +386,7 @@ def main(argv: list[str] | None = None) -> int:
         out_path = ROOT / args.out
         out_path.mkdir(parents=True, exist_ok=True)
         (out_path / "report.md").write_text(report_md, encoding="utf-8")
-        (out_path / "estimates.json").write_text(
-            json.dumps(results, indent=2), encoding="utf-8"
-        )
+        (out_path / "estimates.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
         print(f"wrote report and estimates to {out_path}")
 
     if args.json:

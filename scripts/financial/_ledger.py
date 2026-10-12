@@ -6,9 +6,8 @@ rejected. Outputs are a non-discretionary research product, not advice.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
 from decimal import ROUND_HALF_EVEN, Decimal, FloatOperation, getcontext, localcontext
-from typing import Any
+from typing import Any, Iterable, Mapping
 
 ADVISORY_STAMP = (
     "NON-DISCRETIONARY FINANCIAL RESEARCH PRODUCT - FOR ANALYTICAL PURPOSES "
@@ -71,12 +70,12 @@ def quantize_weight(value: Decimal) -> Decimal:
 
 
 def quantize_multiple(value: Decimal, *, places: int = 4) -> Decimal:
-    quant = Decimal(10) ** -places
+    quant = Decimal("10") ** -places
     return value.quantize(quant, rounding=ROUND_HALF_EVEN)
 
 
 def decimal_sum(values: Iterable[Any]) -> Decimal:
-    total = Decimal(0)
+    total = Decimal("0")
     for item in values:
         total += to_decimal(item)
     return total

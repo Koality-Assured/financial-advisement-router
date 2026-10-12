@@ -82,7 +82,7 @@ class PromptCacheManager:
                 text = json.dumps(text_or_obj)
             except (TypeError, ValueError):
                 text = str(text_or_obj)
-        return max(1, round(len(text) / CHARS_PER_TOKEN))
+        return max(1, int(round(len(text) / CHARS_PER_TOKEN)))
 
     def optimize_anthropic(
         self,
@@ -149,10 +149,7 @@ class PromptCacheManager:
         for idx, msg in enumerate(messages_copy):
             msg_tokens = self.estimate_tokens(msg)
             total_tokens += msg_tokens
-            if bps_placed < max_bps and idx in {
-                len(messages_copy) - 2,
-                len(messages_copy) - 1,
-            }:
+            if bps_placed < max_bps and idx in {len(messages_copy) - 2, len(messages_copy) - 1}:
                 content = msg.get("content")
                 if isinstance(content, list):
                     if content and isinstance(content[-1], dict):
@@ -212,9 +209,7 @@ class PromptCacheManager:
         prefix_tokens = self.estimate_tokens(tools_copy) + (
             self.estimate_tokens(system_prompt) if system_prompt else 0
         )
-        total_tokens = prefix_tokens + sum(
-            self.estimate_tokens(m) for m in messages_copy
-        )
+        total_tokens = prefix_tokens + sum(self.estimate_tokens(m) for m in messages_copy)
 
         eligible = prefix_tokens >= min_prefix
         aligned_prefix_tokens = (prefix_tokens // alignment) * alignment
@@ -244,11 +239,7 @@ class PromptCacheManager:
     ) -> dict[str, Any]:
         """Prepare descriptor for Gemini Context Cache API (>=32,768 tokens)."""
         threshold = self.config.gemini.min_tokens_threshold
-        ttl = (
-            ttl_seconds
-            if ttl_seconds is not None
-            else self.config.gemini.default_ttl_seconds
-        )
+        ttl = ttl_seconds if ttl_seconds is not None else self.config.gemini.default_ttl_seconds
 
         total_tokens = (
             self.estimate_tokens(system_instruction)
@@ -266,9 +257,7 @@ class PromptCacheManager:
             "ttl_seconds": ttl,
             "ttl_string": f"{ttl}s",
             "cached_content_spec": {
-                "system_instruction": {"parts": [{"text": system_instruction}]}
-                if system_instruction
-                else None,
+                "system_instruction": {"parts": [{"text": system_instruction}]} if system_instruction else None,
                 "contents": contents,
                 "tools": tools or [],
                 "ttl": f"{ttl}s",

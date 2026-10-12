@@ -14,15 +14,15 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections.abc import Mapping, Sequence
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_EVEN
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping, Sequence
 
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
 
-from _ledger import (
+from _ledger import (  # noqa: E402
+    ADVISORY_STAMP,
     FloatLedgerError,
     decimal_sum,
     ledger_context,
@@ -46,32 +46,19 @@ def compute_peer_multiples(peer: Mapping[str, Any]) -> dict[str, Decimal | None]
 
     # 1. EV / EBITDA
     if "ev_ebitda" in peer and peer["ev_ebitda"] is not None:
-        multiples["ev_ebitda"] = to_decimal(
-            peer["ev_ebitda"], field=f"{peer.get('ticker', 'peer')}.ev_ebitda"
-        )
+        multiples["ev_ebitda"] = to_decimal(peer["ev_ebitda"], field=f"{peer.get('ticker', 'peer')}.ev_ebitda")
     elif "enterprise_value" in peer and "ebitda" in peer:
-        ev = to_decimal(
-            peer["enterprise_value"],
-            field=f"{peer.get('ticker', 'peer')}.enterprise_value",
-        )
-        ebitda = to_decimal(
-            peer["ebitda"], field=f"{peer.get('ticker', 'peer')}.ebitda"
-        )
+        ev = to_decimal(peer["enterprise_value"], field=f"{peer.get('ticker', 'peer')}.enterprise_value")
+        ebitda = to_decimal(peer["ebitda"], field=f"{peer.get('ticker', 'peer')}.ebitda")
         if ebitda > 0:
             multiples["ev_ebitda"] = ev / ebitda
 
     # 2. P / E
     if "pe" in peer and peer["pe"] is not None:
-        multiples["pe"] = to_decimal(
-            peer["pe"], field=f"{peer.get('ticker', 'peer')}.pe"
-        )
+        multiples["pe"] = to_decimal(peer["pe"], field=f"{peer.get('ticker', 'peer')}.pe")
     elif "market_cap" in peer and "net_income" in peer:
-        mcap = to_decimal(
-            peer["market_cap"], field=f"{peer.get('ticker', 'peer')}.market_cap"
-        )
-        ni = to_decimal(
-            peer["net_income"], field=f"{peer.get('ticker', 'peer')}.net_income"
-        )
+        mcap = to_decimal(peer["market_cap"], field=f"{peer.get('ticker', 'peer')}.market_cap")
+        ni = to_decimal(peer["net_income"], field=f"{peer.get('ticker', 'peer')}.net_income")
         if ni > 0:
             multiples["pe"] = mcap / ni
     elif "price" in peer and "eps" in peer:
@@ -82,30 +69,19 @@ def compute_peer_multiples(peer: Mapping[str, Any]) -> dict[str, Decimal | None]
 
     # 3. EV / Revenue
     if "ev_revenue" in peer and peer["ev_revenue"] is not None:
-        multiples["ev_revenue"] = to_decimal(
-            peer["ev_revenue"], field=f"{peer.get('ticker', 'peer')}.ev_revenue"
-        )
+        multiples["ev_revenue"] = to_decimal(peer["ev_revenue"], field=f"{peer.get('ticker', 'peer')}.ev_revenue")
     elif "enterprise_value" in peer and "revenue" in peer:
-        ev = to_decimal(
-            peer["enterprise_value"],
-            field=f"{peer.get('ticker', 'peer')}.enterprise_value",
-        )
+        ev = to_decimal(peer["enterprise_value"], field=f"{peer.get('ticker', 'peer')}.enterprise_value")
         rev = to_decimal(peer["revenue"], field=f"{peer.get('ticker', 'peer')}.revenue")
         if rev > 0:
             multiples["ev_revenue"] = ev / rev
 
     # 4. P / B (Price to Book)
     if "price_to_book" in peer and peer["price_to_book"] is not None:
-        multiples["price_to_book"] = to_decimal(
-            peer["price_to_book"], field=f"{peer.get('ticker', 'peer')}.price_to_book"
-        )
+        multiples["price_to_book"] = to_decimal(peer["price_to_book"], field=f"{peer.get('ticker', 'peer')}.price_to_book")
     elif "market_cap" in peer and "book_value" in peer:
-        mcap = to_decimal(
-            peer["market_cap"], field=f"{peer.get('ticker', 'peer')}.market_cap"
-        )
-        bv = to_decimal(
-            peer["book_value"], field=f"{peer.get('ticker', 'peer')}.book_value"
-        )
+        mcap = to_decimal(peer["market_cap"], field=f"{peer.get('ticker', 'peer')}.market_cap")
+        bv = to_decimal(peer["book_value"], field=f"{peer.get('ticker', 'peer')}.book_value")
         if bv > 0:
             multiples["price_to_book"] = mcap / bv
 
@@ -129,7 +105,7 @@ def harmonic_mean(values: Sequence[Decimal]) -> Decimal:
     positives = [v for v in values if v > 0]
     if not positives:
         raise ValueError("cannot calculate harmonic mean without positive multiples")
-    inv_sum = sum((Decimal(1) / v for v in positives), Decimal(0))
+    inv_sum = sum((Decimal("1") / v for v in positives), Decimal("0"))
     return Decimal(len(positives)) / inv_sum
 
 
@@ -157,15 +133,13 @@ def valuation_percentiles(
 
     for p in percentiles:
         p_dec = to_decimal(p)
-        if not (Decimal(0) <= p_dec <= Decimal(1)):
+        if not (Decimal("0") <= p_dec <= Decimal("1")):
             raise ValueError(f"percentile must be between 0 and 1, got {p_dec}")
         rank = p_dec * Decimal(n - 1)
         low_idx = int(rank)
         high_idx = min(low_idx + 1, n - 1)
         fraction = rank - Decimal(low_idx)
-        val = sorted_vals[low_idx] + fraction * (
-            sorted_vals[high_idx] - sorted_vals[low_idx]
-        )
+        val = sorted_vals[low_idx] + fraction * (sorted_vals[high_idx] - sorted_vals[low_idx])
         label = f"p{int(p_dec * 100)}"
         results[label] = val
         if p_dec == Decimal("0.50"):
@@ -189,9 +163,7 @@ def summarize_multiples(values: Sequence[Decimal]) -> dict[str, Any]:
 
     # Population standard deviation
     n = Decimal(len(values))
-    variance = (
-        decimal_sum((v - amean) ** 2 for v in values) / n if n > 0 else Decimal(0)
-    )
+    variance = decimal_sum((v - amean) ** 2 for v in values) / n if n > 0 else Decimal("0")
     std_dev = variance.sqrt()
 
     return {
@@ -217,20 +189,10 @@ def compute_target_implied_valuations(
     target: dict[str, Any],
 ) -> dict[str, dict[str, str]]:
     """Compute target implied enterprise value, equity value, and per-share price."""
-    stat_keys = (
-        "harmonic_mean",
-        "arithmetic_mean",
-        "median",
-        "p25",
-        "p75",
-        "min",
-        "max",
-    )
+    stat_keys = ("harmonic_mean", "arithmetic_mean", "median", "p25", "p75", "min", "max")
     implied: dict[str, dict[str, str]] = {}
 
-    shares = to_decimal(
-        target.get("shares_outstanding", "1"), field="target.shares_outstanding"
-    )
+    shares = to_decimal(target.get("shares_outstanding", "1"), field="target.shares_outstanding")
     if shares <= 0:
         raise ValueError("target shares_outstanding must be strictly positive")
     net_debt = to_decimal(target.get("net_debt", "0"), field="target.net_debt")
@@ -293,9 +255,7 @@ def compute_target_implied_valuations(
                 ev = equity + net_debt
                 per_share = equity / shares
             elif "book_value_per_share" in target:
-                bvps = to_decimal(
-                    target["book_value_per_share"], field="target.book_value_per_share"
-                )
+                bvps = to_decimal(target["book_value_per_share"], field="target.book_value_per_share")
                 per_share = mult * bvps
                 equity = per_share * shares
                 ev = equity + net_debt
@@ -397,32 +357,13 @@ def main(argv: list[str] | None = None) -> int:
         default="all",
         help="Filter valuation metric (default: all)",
     )
-    parser.add_argument(
-        "--target-ebitda", help="Override target company EBITDA (Decimal string)"
-    )
-    parser.add_argument(
-        "--target-net-income",
-        help="Override target company Net Income (Decimal string)",
-    )
-    parser.add_argument(
-        "--target-book-value",
-        help="Override target company Book Value (Decimal string)",
-    )
-    parser.add_argument(
-        "--target-net-debt", help="Override target company Net Debt (Decimal string)"
-    )
-    parser.add_argument(
-        "--target-shares",
-        help="Override target company diluted shares (Decimal string)",
-    )
-    parser.add_argument(
-        "--json", action="store_true", help="Print structured JSON output"
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Validate fixture and exit without full calc",
-    )
+    parser.add_argument("--target-ebitda", help="Override target company EBITDA (Decimal string)")
+    parser.add_argument("--target-net-income", help="Override target company Net Income (Decimal string)")
+    parser.add_argument("--target-book-value", help="Override target company Book Value (Decimal string)")
+    parser.add_argument("--target-net-debt", help="Override target company Net Debt (Decimal string)")
+    parser.add_argument("--target-shares", help="Override target company diluted shares (Decimal string)")
+    parser.add_argument("--json", action="store_true", help="Print structured JSON output")
+    parser.add_argument("--dry-run", action="store_true", help="Validate fixture and exit without full calc")
 
     args = parser.parse_args(argv)
     path = Path(args.fixture)
@@ -454,17 +395,8 @@ def main(argv: list[str] | None = None) -> int:
             "net_debt": args.target_net_debt,
             "shares_outstanding": args.target_shares,
         }
-        result = run_comps(
-            fixture, metric_filter=args.metric, target_overrides=overrides
-        )
-    except (
-        OSError,
-        KeyError,
-        ValueError,
-        FloatLedgerError,
-        json.JSONDecodeError,
-        ZeroDivisionError,
-    ) as exc:
+        result = run_comps(fixture, metric_filter=args.metric, target_overrides=overrides)
+    except (OSError, KeyError, ValueError, FloatLedgerError, json.JSONDecodeError, ZeroDivisionError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
@@ -484,13 +416,9 @@ def main(argv: list[str] | None = None) -> int:
             if m in result["target_implied_valuations"]:
                 imp = result["target_implied_valuations"][m]
                 if "harmonic_mean" in imp:
-                    print(
-                        f"Implied Share Price (Harmonic): ${imp['harmonic_mean']['value_per_share']}"
-                    )
+                    print(f"Implied Share Price (Harmonic): ${imp['harmonic_mean']['value_per_share']}")
                 if "median" in imp:
-                    print(
-                        f"Implied Share Price (Median): ${imp['median']['value_per_share']}"
-                    )
+                    print(f"Implied Share Price (Median): ${imp['median']['value_per_share']}")
     return 0
 
 

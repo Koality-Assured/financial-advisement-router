@@ -1,5 +1,8 @@
 # Valid Sources Catalog
 
+> [!IMPORTANT]
+> **Human-Facing Documentation Only**: This README is maintained strictly for human developers and repository visitors. Autonomous AI agents MUST NOT ingest or utilize `README.md` files for operational instructions or context. All agent directives and navigation reside strictly in [`AGENTS.md`](../AGENTS.md) and [`routing/`](../../routing/).
+
 Catalog of vetted, authoritative primary sources, official vendor documentation portals, and standards bodies.
 
 ## Purpose
@@ -15,7 +18,6 @@ Provides machine-discoverable and human-readable registries of Tier 1 and Tier 2
 | [`security-and-compliance.md`](./security-and-compliance.md) | NIST, MITRE, OWASP, CIS Controls, CISA |
 | [`identity-and-access.md`](./identity-and-access.md) | Microsoft Entra, Okta, OAuth/OIDC, SAML, IETF RFCs |
 | [`software-and-devops.md`](./software-and-devops.md) | GitHub, GitLab, Python, Go, Rust, Docker |
-| [`us-primary-law.md`](./us-primary-law.md) | Official US federal law publishers and how state pages extend the list |
 
 ## Machine Catalogs
 

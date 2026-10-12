@@ -6,7 +6,6 @@ Loads config/harness.config.json or provides structured fallback defaults.
 from __future__ import annotations
 
 import json
-import re
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -36,8 +35,6 @@ class QMDAdapterConfig:
     """Tool adapter settings for QMD semantic search."""
 
     command: str = "qmd"
-    source_branch: str = "main"
-    source_worktree: str = "scratch/qmd-main"
     default_min_score: float = 0.5
     default_limit: int = 5
     collections: list[str] = field(
@@ -91,22 +88,7 @@ class GitAdapterConfig:
 
     command: str = "git"
     timeout_sec: int = 30
-    branch_prefix: str = "codex"
-
-
-@dataclass
-class LocalModelAdapterConfig:
-    """Tool adapter settings for local model runtime serving (Ollama/llama-server)."""
-
-    enabled: bool = True
-    provider: str = "local"
-    runtime: str = "ollama"
-    base_url: str = "http://127.0.0.1:11434/v1"
-    default_model: str = "qwen2.5-coder:14b"
-    fast_model: str = "qwen2.5-coder:7b"
-    reasoning_model: str = "deepseek-r1:14b"
-    timeout_sec: int = 120
-    max_parallel_slots: int = 4
+    branch_prefix: str = "agent"
 
 
 @dataclass
@@ -117,9 +99,6 @@ class AdaptersConfig:
     ast_grep: AstGrepAdapterConfig = field(default_factory=AstGrepAdapterConfig)
     headroom: HeadroomAdapterConfig = field(default_factory=HeadroomAdapterConfig)
     git: GitAdapterConfig = field(default_factory=GitAdapterConfig)
-    local_model: LocalModelAdapterConfig = field(
-        default_factory=LocalModelAdapterConfig
-    )
 
 
 @dataclass
@@ -242,33 +221,17 @@ class HarnessConfig:
         if self.a2a.default_budget <= 0:
             errors.append("A2A default_budget must be greater than 0")
         if self.a2a.max_budget < self.a2a.default_budget:
-            errors.append(
-                "A2A max_budget must be greater than or equal to default_budget"
-            )
+            errors.append("A2A max_budget must be greater than or equal to default_budget")
 
         # Adapters validation
         if self.adapters.qmd.timeout_sec <= 0:
             errors.append("QMD timeout_sec must be positive")
-        if (
-            not self.adapters.qmd.source_branch.strip()
-            or self.adapters.qmd.source_branch.startswith("-")
-        ):
-            errors.append("QMD source_branch must be a valid branch name")
-        if not re.fullmatch(
-            r"scratch/qmd-main(?:-[A-Za-z0-9][A-Za-z0-9_-]{0,63})?",
-            self.adapters.qmd.source_worktree,
-        ):
-            errors.append(
-                "QMD source_worktree must select scratch/qmd-main or a safe unique suffix"
-            )
         if self.adapters.ast_grep.timeout_sec <= 0:
             errors.append("ast-grep timeout_sec must be positive")
         if self.adapters.headroom.timeout_sec <= 0:
             errors.append("Headroom timeout_sec must be positive")
         if not (1 <= self.adapters.headroom.port <= 65535):
             errors.append(f"Invalid Headroom port: {self.adapters.headroom.port}")
-        if self.adapters.local_model.timeout_sec <= 0:
-            errors.append("local_model timeout_sec must be positive")
 
         return errors
 
@@ -296,8 +259,6 @@ def _build_adapters(data: dict[str, Any] | None) -> AdaptersConfig:
 
     qmd = QMDAdapterConfig(
         command=str(qmd_data.get("command", "qmd")),
-        source_branch=str(qmd_data.get("source_branch", "main")),
-        source_worktree=str(qmd_data.get("source_worktree", "scratch/qmd-main")),
         default_min_score=float(qmd_data.get("default_min_score", 0.5)),
         default_limit=int(qmd_data.get("default_limit", 5)),
         collections=list(qmd_data.get("collections", QMDAdapterConfig().collections)),
@@ -307,9 +268,7 @@ def _build_adapters(data: dict[str, Any] | None) -> AdaptersConfig:
     ast_grep = AstGrepAdapterConfig(
         command=str(ast_data.get("command", "ast-grep")),
         timeout_sec=int(ast_data.get("timeout_sec", 60)),
-        default_languages=list(
-            ast_data.get("default_languages", AstGrepAdapterConfig().default_languages)
-        ),
+        default_languages=list(ast_data.get("default_languages", AstGrepAdapterConfig().default_languages)),
     )
 
     headroom = HeadroomAdapterConfig(
@@ -322,29 +281,10 @@ def _build_adapters(data: dict[str, Any] | None) -> AdaptersConfig:
     git = GitAdapterConfig(
         command=str(git_data.get("command", "git")),
         timeout_sec=int(git_data.get("timeout_sec", 30)),
-        branch_prefix=str(git_data.get("branch_prefix", "codex")),
+        branch_prefix=str(git_data.get("branch_prefix", "agent")),
     )
 
-    local_data = data.get("local_model", {})
-    local_model = LocalModelAdapterConfig(
-        enabled=bool(local_data.get("enabled", True)),
-        provider=str(local_data.get("provider", "local")),
-        runtime=str(local_data.get("runtime", "ollama")),
-        base_url=str(local_data.get("base_url", "http://127.0.0.1:11434/v1")),
-        default_model=str(local_data.get("default_model", "qwen2.5-coder:14b")),
-        fast_model=str(local_data.get("fast_model", "qwen2.5-coder:7b")),
-        reasoning_model=str(local_data.get("reasoning_model", "deepseek-r1:14b")),
-        timeout_sec=int(local_data.get("timeout_sec", 120)),
-        max_parallel_slots=int(local_data.get("max_parallel_slots", 4)),
-    )
-
-    return AdaptersConfig(
-        qmd=qmd,
-        ast_grep=ast_grep,
-        headroom=headroom,
-        git=git,
-        local_model=local_model,
-    )
+    return AdaptersConfig(qmd=qmd, ast_grep=ast_grep, headroom=headroom, git=git)
 
 
 def _build_cache(data: dict[str, Any] | None) -> CacheConfig:
@@ -390,35 +330,17 @@ def _build_subagents(data: dict[str, Any] | None) -> SubagentsConfig:
         return SubagentsConfig()
     adapters_data = data.get("host_adapters", {})
     host_adapters = HostAdaptersConfig(
-        claude_settings=str(
-            adapters_data.get("claude", {}).get(
-                "settings_path", ".claude/settings.json"
-            )
-        ),
-        claude_rules=str(
-            adapters_data.get("claude", {}).get("rules_entry", "CLAUDE.md")
-        ),
-        cursor_rules_dir=str(
-            adapters_data.get("cursor", {}).get("rules_dir", ".cursor/rules")
-        ),
-        cursor_ignore=str(
-            adapters_data.get("cursor", {}).get("ignore_path", ".cursorignore")
-        ),
-        copilot_instructions=str(
-            adapters_data.get("openai_copilot", {}).get(
-                "instructions_path", ".github/copilot-instructions.md"
-            )
-        ),
-        gemini_rules=str(
-            adapters_data.get("antigravity", {}).get("rules_entry", "GEMINI.md")
-        ),
+        claude_settings=str(adapters_data.get("claude", {}).get("settings_path", ".claude/settings.json")),
+        claude_rules=str(adapters_data.get("claude", {}).get("rules_entry", "CLAUDE.md")),
+        cursor_rules_dir=str(adapters_data.get("cursor", {}).get("rules_dir", ".cursor/rules")),
+        cursor_ignore=str(adapters_data.get("cursor", {}).get("ignore_path", ".cursorignore")),
+        copilot_instructions=str(adapters_data.get("openai_copilot", {}).get("instructions_path", ".github/copilot-instructions.md")),
+        gemini_rules=str(adapters_data.get("antigravity", {}).get("rules_entry", "GEMINI.md")),
     )
     return SubagentsConfig(
         isolate_parent_context=bool(data.get("isolate_parent_context", True)),
         clean_slate_required=bool(data.get("clean_slate_required", True)),
-        prohibit_transcript_forwarding=bool(
-            data.get("prohibit_transcript_forwarding", True)
-        ),
+        prohibit_transcript_forwarding=bool(data.get("prohibit_transcript_forwarding", True)),
         enforce_selective_retrieval=bool(data.get("enforce_selective_retrieval", True)),
         host_adapters=host_adapters,
     )
@@ -467,9 +389,7 @@ def load_harness_config(
             )
             val_errors = cfg.validate()
             if val_errors:
-                raise ValueError(
-                    f"Invalid harness configuration: {'; '.join(val_errors)}"
-                )
+                raise ValueError(f"Invalid harness configuration: {'; '.join(val_errors)}")
             return cfg
         except json.JSONDecodeError:
             # If JSON is corrupted, fallback with root

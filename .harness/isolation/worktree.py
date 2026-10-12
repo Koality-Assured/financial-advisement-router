@@ -51,9 +51,7 @@ class WorktreeClaim:
     areas: list[str]
     agent: str
     created: str = field(
-        default_factory=lambda: dt.datetime.now(dt.UTC).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        )
+        default_factory=lambda: dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     )
     metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -85,9 +83,7 @@ class WorktreeManager:
         worktrees_dir: Path | str | None = None,
     ) -> None:
         self.config = config or load_harness_config(repo_root=repo_root)
-        self.repo_root = (
-            Path(repo_root).resolve() if repo_root else self.config.repo_root
-        )
+        self.repo_root = Path(repo_root).resolve() if repo_root else self.config.repo_root
 
         if worktrees_dir:
             self.worktrees_dir = Path(worktrees_dir).resolve()
@@ -106,9 +102,7 @@ class WorktreeManager:
         """Return the worktree checkout directory for a slug."""
         return self.worktrees_dir / slug
 
-    def run_git(
-        self, args: list[str], cwd: Path | None = None, check: bool = True
-    ) -> subprocess.CompletedProcess[str]:
+    def run_git(self, args: list[str], cwd: Path | None = None, check: bool = True) -> subprocess.CompletedProcess[str]:
         """Execute a git command within the repo root or specified cwd."""
         target_cwd = cwd or self.repo_root
         try:
@@ -123,18 +117,12 @@ class WorktreeManager:
                 timeout=self.timeout_sec,
             )
         except subprocess.CalledProcessError as exc:
-            msg = (
-                exc.stderr or exc.stdout or f"git exit code {exc.returncode}"
-            ).strip()
+            msg = (exc.stderr or exc.stdout or f"git exit code {exc.returncode}").strip()
             raise WorktreeError(f"Git command failed: {msg}") from exc
         except subprocess.TimeoutExpired as exc:
-            raise WorktreeError(
-                f"Git command timed out after {self.timeout_sec}s: {' '.join(args)}"
-            ) from exc
+            raise WorktreeError(f"Git command timed out after {self.timeout_sec}s: {' '.join(args)}") from exc
         except OSError as exc:
-            raise WorktreeError(
-                f"Failed to execute git '{self.git_cmd}': {exc}"
-            ) from exc
+            raise WorktreeError(f"Failed to execute git '{self.git_cmd}': {exc}") from exc
 
     def load_claims(self) -> list[WorktreeClaim]:
         """Load all valid claim files in the worktrees directory."""
@@ -188,13 +176,9 @@ class WorktreeManager:
     ) -> WorktreeClaim:
         """Create a new isolated git worktree, branch, and claim record."""
         if not SLUG_PATTERN.match(slug):
-            raise WorktreeError(
-                f"Invalid slug '{slug}'. Must be kebab-case matching [a-z0-9-]+."
-            )
+            raise WorktreeError(f"Invalid slug '{slug}'. Must be kebab-case matching [a-z0-9-]+.")
         if not areas:
-            raise WorktreeError(
-                "Cannot claim an empty area list. Specify at least one top-level area."
-            )
+            raise WorktreeError("Cannot claim an empty area list. Specify at least one top-level area.")
 
         dest = self.worktree_path(slug)
         claim_file = self.claim_path(slug)
@@ -203,9 +187,7 @@ class WorktreeManager:
         # Check concurrency overlap
         overlaps = self.check_concurrency(areas, ignore_slug=slug)
         if overlaps and not force:
-            overlapping_slugs = ", ".join(
-                f"{c.slug} ({', '.join(c.areas)})" for c in overlaps
-            )
+            overlapping_slugs = ", ".join(f"{c.slug} ({', '.join(c.areas)})" for c in overlaps)
             raise WorktreeConcurrencyError(
                 f"Cannot create worktree '{slug}': requested areas {areas} overlap with active claims: {overlapping_slugs}. Use force=True if human-authorized."
             )
@@ -234,9 +216,7 @@ class WorktreeManager:
             git_args.append(base_branch)
 
         self.run_git(git_args)
-        claim_file.write_text(
-            json.dumps(claim.to_dict(), indent=2) + "\n", encoding="utf-8"
-        )
+        claim_file.write_text(json.dumps(claim.to_dict(), indent=2) + "\n", encoding="utf-8")
 
         return claim
 
@@ -251,9 +231,7 @@ class WorktreeManager:
         claim_file = self.claim_path(slug)
 
         if not dest.exists() and not claim_file.exists():
-            raise WorktreeNotFoundError(
-                f"Worktree or claim for '{slug}' does not exist."
-            )
+            raise WorktreeNotFoundError(f"Worktree or claim for '{slug}' does not exist.")
 
         if dry_run:
             return True
@@ -302,27 +280,23 @@ class WorktreeManager:
                 wt_path = Path(entry.get("worktree", ""))
                 slug = wt_path.name
                 claim = claims_by_slug.get(slug)
-                results.append(
-                    {
-                        "worktree": str(wt_path),
-                        "branch": entry.get("branch", ""),
-                        "head": entry.get("head", ""),
-                        "slug": slug,
-                        "claim": claim.to_dict() if claim else None,
-                    }
-                )
+                results.append({
+                    "worktree": str(wt_path),
+                    "branch": entry.get("branch", ""),
+                    "head": entry.get("head", ""),
+                    "slug": slug,
+                    "claim": claim.to_dict() if claim else None,
+                })
         except WorktreeError:
             # If git worktree list fails, return just claim info
             for claim in claims_by_slug.values():
-                results.append(
-                    {
-                        "worktree": claim.path,
-                        "branch": claim.branch,
-                        "head": "",
-                        "slug": claim.slug,
-                        "claim": claim.to_dict(),
-                    }
-                )
+                results.append({
+                    "worktree": claim.path,
+                    "branch": claim.branch,
+                    "head": "",
+                    "slug": claim.slug,
+                    "claim": claim.to_dict(),
+                })
 
         return results
 
@@ -333,7 +307,7 @@ class WorktreeManager:
     ) -> list[str]:
         """Clean up dangling claim files whose worktree path is gone, or claims exceeding max age."""
         cleaned: list[str] = []
-        now = dt.datetime.now(dt.UTC)
+        now = dt.datetime.now(dt.timezone.utc)
 
         for claim in self.load_claims():
             target_path = Path(claim.path)
@@ -341,9 +315,7 @@ class WorktreeManager:
 
             if max_age_seconds is not None and not is_stale:
                 try:
-                    created_dt = dt.datetime.fromisoformat(
-                        claim.created
-                    )
+                    created_dt = dt.datetime.fromisoformat(claim.created.replace("Z", "+00:00"))
                     if (now - created_dt).total_seconds() > max_age_seconds:
                         is_stale = True
                 except (ValueError, TypeError):

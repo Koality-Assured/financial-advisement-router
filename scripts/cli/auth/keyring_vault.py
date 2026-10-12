@@ -10,15 +10,14 @@ import datetime as dt
 import json
 import os
 import secrets
+import sys
 import threading
 import time
 from pathlib import Path
 from typing import Any
 
 # Service name for OS-native keyring storage
-HARNESS_KEYRING_SERVICE = os.environ.get(
-    "HARNESS_KEYRING_SERVICE", "harness-control-plane"
-)
+HARNESS_KEYRING_SERVICE = os.environ.get("HARNESS_KEYRING_SERVICE", "harness-control-plane")
 HARNESS_PROVIDERS_KEY = "__harness_providers__"
 MAGIC_HEADER = b"HNC1"  # Harness Encrypted Credentials v1
 
@@ -46,13 +45,7 @@ def _enforce_private_permissions(path: Path) -> None:
                 import subprocess
 
                 subprocess.run(
-                    [
-                        "icacls",
-                        str(path),
-                        "/inheritance:r",
-                        "/grant:r",
-                        f"{user}:(R,W)",
-                    ],
+                    ["icacls", str(path), "/inheritance:r", "/grant:r", f"{user}:(R,W)"],
                     capture_output=True,
                     check=False,
                 )
@@ -66,29 +59,10 @@ def _enforce_private_permissions(path: Path) -> None:
 
 
 def _enforce_private_dir_permissions(path: Path) -> None:
-    """Enforce strict user-only permissions on directory (0700 on POSIX, restricted ACLs on Windows)."""
+    """Enforce strict user-only permissions on directory (0700 on POSIX)."""
     if not path.exists():
         return
-    if os.name == "nt":
-        user = os.environ.get("USERNAME")
-        if user:
-            try:
-                import subprocess
-
-                subprocess.run(
-                    [
-                        "icacls",
-                        str(path),
-                        "/inheritance:r",
-                        "/grant:r",
-                        f"{user}:(OI)(CI)(F)",
-                    ],
-                    capture_output=True,
-                    check=False,
-                )
-            except Exception:
-                pass
-    else:
+    if os.name != "nt":
         try:
             os.chmod(path, 0o700)
         except Exception:
@@ -108,7 +82,7 @@ def is_token_expired(token_data: dict[str, Any], buffer_seconds: int = 60) -> bo
             try:
                 exp_ts = float(exp)
             except ValueError:
-                exp_dt = dt.datetime.fromisoformat(exp)
+                exp_dt = dt.datetime.fromisoformat(exp.replace("Z", "+00:00"))
                 exp_ts = exp_dt.timestamp()
         else:
             return False
@@ -119,14 +93,12 @@ def is_token_expired(token_data: dict[str, Any], buffer_seconds: int = 60) -> bo
 
 class EncryptedFileVault:
     """Headless fallback vault using AES-256-GCM and PBKDF2 encryption.
-
+    
     Stores credentials in ~/.harness/credentials.enc (or path from HARNESS_VAULT_PATH).
     Protected by a master passphrase (HARNESS_VAULT_PASSPHRASE) or machine-bound salt.
     """
 
-    def __init__(
-        self, vault_path: Path | str | None = None, passphrase: str | None = None
-    ) -> None:
+    def __init__(self, vault_path: Path | str | None = None, passphrase: str | None = None) -> None:
         if vault_path:
             self.path = Path(vault_path).resolve()
         elif os.environ.get("HARNESS_VAULT_PATH"):
@@ -210,9 +182,7 @@ class EncryptedFileVault:
             key = self._derive_key(salt)
             aesgcm = AESGCM(key)
             try:
-                plaintext = aesgcm.decrypt(
-                    nonce, ciphertext, associated_data=MAGIC_HEADER
-                )
+                plaintext = aesgcm.decrypt(nonce, ciphertext, associated_data=MAGIC_HEADER)
             except InvalidTag as it_exc:
                 raise ValueError(
                     f"Authentication tag verification failed for vault at {self.path}: "
@@ -275,7 +245,7 @@ class EncryptedFileVault:
                 self.recover_corrupted(backup=True)
                 data = {}
             rec = dict(token_data)
-            rec["updated_at"] = dt.datetime.now(dt.UTC).isoformat()
+            rec["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
             data[norm_provider] = rec
             self._save_all(data)
 
@@ -307,10 +277,8 @@ class EncryptedFileVault:
                 return None
             backup_path = None
             if backup:
-                timestamp = dt.datetime.now(dt.UTC).strftime("%Y%m%d_%H%M%S")
-                backup_path = self.path.with_name(
-                    f"{self.path.name}.corrupted.{timestamp}"
-                )
+                timestamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d_%H%M%S")
+                backup_path = self.path.with_name(f"{self.path.name}.corrupted.{timestamp}")
                 try:
                     self.path.replace(backup_path)
                 except Exception:
@@ -353,7 +321,9 @@ class KeyringVault:
                 return False
             name = backend.__class__.__name__
             # Reject fail/null backends
-            return not ("fail" in name.lower() or "null" in name.lower())
+            if "fail" in name.lower() or "null" in name.lower():
+                return False
+            return True
         except Exception:
             return False
 
@@ -372,10 +342,8 @@ class KeyringVault:
         if not self.is_available:
             return
         try:
-            clean = sorted(set(providers))
-            self._keyring.set_password(
-                self.service_name, HARNESS_PROVIDERS_KEY, json.dumps(clean)
-            )
+            clean = sorted(list(set(providers)))
+            self._keyring.set_password(self.service_name, HARNESS_PROVIDERS_KEY, json.dumps(clean))
         except Exception:
             pass
 
@@ -389,9 +357,7 @@ class KeyringVault:
                 if raw:
                     return json.loads(raw)
             except Exception as exc:
-                raise RuntimeError(
-                    f"Keyring read error for provider '{provider}': {exc}"
-                ) from exc
+                raise RuntimeError(f"Keyring read error for provider '{provider}': {exc}") from exc
         return None
 
     def set_credential(self, provider: str, token_data: dict[str, Any]) -> None:
@@ -399,21 +365,17 @@ class KeyringVault:
             raise RuntimeError("Keyring is not available on this platform")
         norm_provider = provider.lower().strip()
         rec = dict(token_data)
-        rec["updated_at"] = dt.datetime.now(dt.UTC).isoformat()
+        rec["updated_at"] = dt.datetime.now(dt.timezone.utc).isoformat()
         with self._lock:
             try:
-                self._keyring.set_password(
-                    self.service_name, norm_provider, json.dumps(rec)
-                )
+                self._keyring.set_password(self.service_name, norm_provider, json.dumps(rec))
                 # Update index
                 providers = self._get_providers_index()
                 if norm_provider not in providers:
                     providers.append(norm_provider)
                     self._set_providers_index(providers)
             except Exception as exc:
-                raise RuntimeError(
-                    f"Keyring write error for provider '{provider}': {exc}"
-                ) from exc
+                raise RuntimeError(f"Keyring write error for provider '{provider}': {exc}") from exc
 
     def delete_credential(self, provider: str) -> bool:
         if not self.is_available:
@@ -447,12 +409,8 @@ class UniversalVault:
         force_file_vault: bool = False,
     ) -> None:
         self.keyring_vault = KeyringVault(service_name=service_name)
-        self.file_vault = EncryptedFileVault(
-            vault_path=vault_path, passphrase=passphrase
-        )
-        self.force_file_vault = force_file_vault or (
-            os.environ.get("HARNESS_FORCE_FILE_VAULT", "").lower() in ("1", "true")
-        )
+        self.file_vault = EncryptedFileVault(vault_path=vault_path, passphrase=passphrase)
+        self.force_file_vault = force_file_vault or (os.environ.get("HARNESS_FORCE_FILE_VAULT", "").lower() in ("1", "true"))
 
     def __repr__(self) -> str:
         return f"<UniversalVault backend={self.active_backend_name}>"
@@ -516,7 +474,7 @@ class UniversalVault:
             providers.update(self.file_vault.list_providers())
         except Exception:
             pass
-        return sorted(providers)
+        return sorted(list(providers))
 
 
 _GLOBAL_VAULT: UniversalVault | None = None

@@ -9,9 +9,8 @@ from __future__ import annotations
 import json
 import re
 import subprocess
-import sys
-from collections.abc import Callable, Iterable
 from pathlib import Path
+from typing import Callable, Iterable
 
 from _harness_template import (
     HARNESS_TEMPLATE_DEST_EXCLUDE_RELS,
@@ -24,18 +23,6 @@ from _harness_template import (
     is_harness_template_rel_kept,
     rel_has_instance_leak_name,
     script_test_is_kept,
-)
-
-_REPOS = Path(__file__).resolve().parents[1] / "repos"
-if str(_REPOS) not in sys.path:
-    sys.path.insert(0, str(_REPOS))
-
-from beautify_repo import (
-    MIT_LICENSE_TEMPLATE,
-    generate_readme_hero,
-    generate_vector_banner,
-    generate_vector_logo,
-    get_domain_spec,
 )
 
 DEFAULT_ORG = "Koality-Assured"
@@ -85,8 +72,6 @@ CORE_CHECKOUT_EXTRA_RELS: frozenset[str] = frozenset(
         "docs/standards/AGENTS.md",
         "references/AGENTS.md",
         "projects/project-prompts/README.md",
-        "assets/ai-harness-core-logo.svg",
-        "assets/ai-harness-core-banner.svg",
     }
 )
 
@@ -144,9 +129,7 @@ def validate_org(org: str) -> str:
 
 def validate_visibility(visibility: str) -> str:
     if visibility not in VISIBILITY_CHOICES:
-        raise ValueError(
-            f"invalid --visibility {visibility!r}: expected public|private"
-        )
+        raise ValueError(f"invalid --visibility {visibility!r}: expected public|private")
     return visibility
 
 
@@ -180,18 +163,21 @@ def is_domain_marker(rel: str) -> bool:
         if parts[2] in HARNESS_TEMPLATE_DROP_SKILL_FAMILIES:
             return True
     if len(parts) >= 3 and parts[0] == "ai-tooling" and parts[1] == "agents":
-        if parts[2] not in {
-            "AGENTS.md",
-            "model-tiers.md",
-            "README.md",
-        } and not agent_is_kept(parts[2]):
+        if parts[2] not in {"AGENTS.md", "model-tiers.md", "README.md"} and not agent_is_kept(parts[2]):
             return True
     if len(parts) >= 3 and parts[0] == "scripts" and parts[1] == "tests":
         if path in HARNESS_TEMPLATE_DEST_EXCLUDE_RELS:
             return True
         if len(parts) != 3 or not script_test_is_kept(parts[2]):
             return True
-    return bool(len(parts) >= 2 and parts[0] == "docs" and parts[1] == "standards" and (len(parts) >= 3 and parts[2] not in HARNESS_TEMPLATE_KEEP_DOCS_STANDARDS and parts[2] not in {"AGENTS.md", "README.md"}))
+    if len(parts) >= 2 and parts[0] == "docs" and parts[1] == "standards":
+        if (
+            len(parts) >= 3
+            and parts[2] not in HARNESS_TEMPLATE_KEEP_DOCS_STANDARDS
+            and parts[2] not in {"AGENTS.md", "README.md"}
+        ):
+            return True
+    return False
 
 
 def is_ignorable_copy_rel(rel: str) -> bool:
@@ -201,7 +187,9 @@ def is_ignorable_copy_rel(rel: str) -> bool:
         return True
     if parts and parts[-1] in COPY_SKIP_FILE_NAMES:
         return True
-    return bool(parts and parts[-1].endswith((".pyc", ".pyo")))
+    if parts and parts[-1].endswith((".pyc", ".pyo")):
+        return True
+    return False
 
 
 def may_copy_core_source_rel(rel: str) -> bool:
@@ -236,27 +224,19 @@ def is_instance_corpus_rel(rel: str) -> bool:
         fam = parts[1]
         if fam in HARNESS_TEMPLATE_DROP_REFERENCE_FAMILIES:
             return True
-        if fam not in HARNESS_TEMPLATE_KEEP_REFERENCE_FAMILIES and fam not in {
-            "AGENTS.md",
-            "reference-maintenance.md",
-        }:
+        if (
+            fam not in HARNESS_TEMPLATE_KEEP_REFERENCE_FAMILIES
+            and fam not in {"AGENTS.md", "reference-maintenance.md"}
+        ):
             return True
-    if (
-        len(parts) >= 2
-        and parts[0] == "projects"
-        and parts[1]
-        not in {
-            "notes",
-            "project-prompts",
-            "AGENTS.md",
-        }
-    ):
+    if len(parts) >= 2 and parts[0] == "projects" and parts[1] not in {
+        "notes",
+        "project-prompts",
+        "AGENTS.md",
+    }:
         return True
     if len(parts) >= 4 and parts[0] == "ai-tooling" and parts[1] == "memory":
-        if parts[2] in {"user", "agent", "model"} and parts[3] not in {
-            "AGENTS.md",
-            ".gitkeep",
-        }:
+        if parts[2] in {"user", "agent", "model"} and parts[3] not in {"AGENTS.md", ".gitkeep"}:
             return True
     return False
 
@@ -385,56 +365,7 @@ def domain_overlay_files(
     }
     if domain == "none":
         return files
-
-    # Automatically synthesize vector branding, live badges, and hardening
-    spec = get_domain_spec(name=name, domain=domain, org=org, visibility=visibility)
-    files[f"assets/{name}-logo.svg"] = generate_vector_logo(spec)
-    files[f"assets/{name}-banner.svg"] = generate_vector_banner(spec)
-    files["LICENSE"] = MIT_LICENSE_TEMPLATE
-
-    # Hardened pyproject.toml preventing setuptools flat-layout discovery collision
-    files["pyproject.toml"] = (
-        "[build-system]\n"
-        'requires = ["setuptools>=61.0"]\n'
-        'build-backend = "setuptools.build_meta"\n\n'
-        "[project]\n"
-        f'name = "{name}"\n'
-        'version = "1.0.0"\n'
-        f'description = "{spec.tagline}"\n'
-        'authors = [{ name = "Koality-Assured", email = "engineering@koality-assured.com" }]\n'
-        f'license = {{ text = "{spec.license_type}" }}\n'
-        'readme = "README.md"\n'
-        'requires-python = ">=3.11"\n'
-        "dependencies = []\n\n"
-        "[tool.setuptools]\n"
-        "packages = []\n"
-    )
-
-    hero = generate_readme_hero(spec)
     title = domain.replace("-", " ")
-
-    files["README.md"] = (
-        hero + f"\n## Mission Statement\n\n"
-        f"Provide a dedicated, hardened domain harness and orchestration system for `{spec.title}` "
-        f"within the Koality-Assured ecosystem.\n\n"
-        f"## Operating Modes\n\n"
-        f"This repository operates as a **domain spoke** scaffolded from `ai-harness-core`. "
-        f"Feed {title} domain corpus, standards, skills, and references here, while keeping generic harness machinery synchronized with core.\n\n"
-        f"### Spoke ↔ Core Synchronization\n\n"
-        f"- **Pull generic core updates**: `python scripts/sync/pull_harness_core.py --dry-run --json`\n"
-        f"- **Propose generic improvements back to core**: `python scripts/sync/propose_core_update.py --dry-run --json`\n\n"
-        f"## Key Capabilities\n\n"
-        + "".join(
-            f"- **{chip}**: Native domain competency and verified execution workflows.\n"
-            for chip in spec.chips
-        )
-        + "\n## Verification & Testing\n\n"
-        "```bash\n"
-        "# Run local test suite\n"
-        "python -m unittest discover -s scripts/tests\n"
-        "```\n"
-    )
-
     files[f"docs/standards/{domain}-overlay.md"] = (
         "---\n"
         f"doc_kind: requirement\n"
@@ -524,9 +455,7 @@ def git_init_if_needed(repo: Path, runner: GitRunner = run_git) -> bool:
 
 
 def current_branch(repo: Path, runner: GitRunner = run_git) -> str:
-    code, stdout, _stderr = runner(
-        ["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=repo
-    )
+    code, stdout, stderr = runner(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=repo)
     if code != 0:
         return "HEAD"
     return stdout or "HEAD"

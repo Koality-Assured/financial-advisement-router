@@ -120,10 +120,23 @@ def _check_kkt(
     return x, obj
 
 
+MAX_LONG_ONLY_ASSETS = 16
+
+
 def solve_qp_long_only(
     Q: list[list[Decimal]], c: list[Decimal], A: list[list[Decimal]], b: list[Decimal]
 ) -> list[Decimal]:
+    """Exact long-only QP: min 0.5 x'Qx + c'x s.t. Ax = b, x >= 0.
+
+    Enumerates every candidate support set, keeps those satisfying the KKT
+    conditions, and returns the best objective. Exact in Decimal arithmetic but
+    exponential in asset count, so it is capped at ``MAX_LONG_ONLY_ASSETS``.
+    """
     N = len(Q)
+    if N > MAX_LONG_ONLY_ASSETS:
+        raise ValueError(
+            f"long-only solver supports at most {MAX_LONG_ONLY_ASSETS} assets (got {N})"
+        )
     best_x = None
     best_obj = None
     for r in range(N + 1):

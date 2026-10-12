@@ -14,15 +14,15 @@ import argparse
 import json
 import random
 import sys
-from collections.abc import Sequence
 from decimal import ROUND_CEILING, Decimal
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
 
-from _ledger import (
+from _ledger import (  # noqa: E402
+    ADVISORY_STAMP,
     FINRA_2214_LEGEND,
     FloatLedgerError,
     decimal_sum,
@@ -73,16 +73,14 @@ def mean_std(values: Sequence[Decimal]) -> tuple[Decimal, Decimal]:
     if n < 2:
         raise ValueError("need at least two observations")
     mu = decimal_sum(values) / n
-    var = decimal_sum((x - mu) ** 2 for x in values) / (n - Decimal(1))
+    var = decimal_sum((x - mu) ** 2 for x in values) / (n - Decimal("1"))
     return mu, var.sqrt()
 
 
 def parametric_var(returns: Sequence[Decimal], confidence: Decimal) -> Decimal:
     z = Z_SCORES.get(confidence)
     if z is None:
-        raise ValueError(
-            f"unsupported confidence {confidence}; use 0.95, 0.975, or 0.99"
-        )
+        raise ValueError(f"unsupported confidence {confidence}; use 0.95, 0.975, or 0.99")
     mu, sigma = mean_std(returns)
     # Loss VaR = -(mu - z*sigma) on the return distribution.
     return -(mu - z * sigma)
@@ -103,7 +101,7 @@ def bootstrap_paths(
     if n == 0:
         raise ValueError("empty return series")
     terminal: list[Decimal] = []
-    one = Decimal(1)
+    one = Decimal("1")
     for _ in range(paths):
         wealth = one
         for _ in range(horizon):
@@ -162,11 +160,7 @@ def main(argv: list[str] | None = None) -> int:
         default=str(_HERE / "fixtures" / "synthetic_returns.json"),
         help="Synthetic return series JSON",
     )
-    parser.add_argument(
-        "--method",
-        choices=("historical", "parametric", "bootstrap"),
-        default="historical",
-    )
+    parser.add_argument("--method", choices=("historical", "parametric", "bootstrap"), default="historical")
     parser.add_argument("--confidence", default="0.95")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--paths", type=int, default=1000)
@@ -176,14 +170,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     path = Path(args.fixture)
     if args.dry_run:
-        print(
-            json.dumps(
-                stamp_payload(
-                    {"dry_run": True, "fixture": path.as_posix(), "method": args.method}
-                ),
-                indent=2,
-            )
-        )
+        print(json.dumps(stamp_payload({"dry_run": True, "fixture": path.as_posix(), "method": args.method}), indent=2))
         return 0
     try:
         fixture = json.loads(path.read_text(encoding="utf-8"))
@@ -195,13 +182,7 @@ def main(argv: list[str] | None = None) -> int:
             paths=args.paths,
             horizon=args.horizon,
         )
-    except (
-        OSError,
-        KeyError,
-        ValueError,
-        FloatLedgerError,
-        json.JSONDecodeError,
-    ) as exc:
+    except (OSError, KeyError, ValueError, FloatLedgerError, json.JSONDecodeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     if args.json:

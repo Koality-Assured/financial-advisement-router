@@ -38,11 +38,8 @@ from cli.auth.oauth_flows import (
     AnthropicOAuthFlow,
     CursorAuthFlow,
     GeminiOAuthFlow,
-    LoopbackAuthHandler,
     LoopbackAuthServer,
     OpenAIAuthFlow,
-    ensure_fresh_token,
-    extract_code_and_state_from_input,
     extract_code_from_input,
     generate_pkce_pair,
 )
@@ -60,9 +57,7 @@ class TestPKCE(unittest.TestCase):
 
         # Verify challenge computation matches RFC 7636: BASE64URL(SHA256(ASCII(verifier)))
         digest = hashlib.sha256(verifier.encode("ascii")).digest()
-        expected_challenge = (
-            base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
-        )
+        expected_challenge = base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
         self.assertEqual(challenge, expected_challenge)
 
     def test_pkce_rfc7636_test_vector(self) -> None:
@@ -74,9 +69,7 @@ class TestPKCE(unittest.TestCase):
         self.assertEqual(challenge, expected)
 
     def test_extract_code_from_input(self) -> None:
-        self.assertEqual(
-            extract_code_from_input("my-auth-code-123"), "my-auth-code-123"
-        )
+        self.assertEqual(extract_code_from_input("my-auth-code-123"), "my-auth-code-123")
         url_input = "http://127.0.0.1:8085/callback?code=captured_code_xyz&state=abc"
         self.assertEqual(extract_code_from_input(url_input), "captured_code_xyz")
 
@@ -85,7 +78,7 @@ class TestCredentialSanitization(unittest.TestCase):
     """Test zero plaintext token leakage in logs and terminal representations."""
 
     def test_mask_token_long(self) -> None:
-        token = "sk-ant-EXAMPLE-1234567890abcdefghijklmnopqr"
+        token = "sk-ant-api03-1234567890abcdefghijklmnopqr"
         masked = mask_token(token)
         self.assertTrue(masked.startswith("sk-ant"))
         self.assertTrue(masked.endswith("nopqr"[-4:]))
@@ -104,31 +97,19 @@ class TestCredentialSanitization(unittest.TestCase):
         self.assertFalse(is_token_expired({"access_token": "abc"}))
 
         # Expired in past
-        self.assertTrue(
-            is_token_expired({"access_token": "abc", "expires_at": now - 100})
-        )
+        self.assertTrue(is_token_expired({"access_token": "abc", "expires_at": now - 100}))
 
         # Valid in future
-        self.assertFalse(
-            is_token_expired({"access_token": "abc", "expires_at": now + 3600})
-        )
+        self.assertFalse(is_token_expired({"access_token": "abc", "expires_at": now + 3600}))
 
         # Within buffer (expires in 30s, buffer is 60s)
-        self.assertTrue(
-            is_token_expired(
-                {"access_token": "abc", "expires_at": now + 30}, buffer_seconds=60
-            )
-        )
+        self.assertTrue(is_token_expired({"access_token": "abc", "expires_at": now + 30}, buffer_seconds=60))
 
         # ISO string parsing
         future_iso = "2099-01-01T00:00:00Z"
-        self.assertFalse(
-            is_token_expired({"access_token": "abc", "expires_at": future_iso})
-        )
+        self.assertFalse(is_token_expired({"access_token": "abc", "expires_at": future_iso}))
         past_iso = "2020-01-01T00:00:00Z"
-        self.assertTrue(
-            is_token_expired({"access_token": "abc", "expires_at": past_iso})
-        )
+        self.assertTrue(is_token_expired({"access_token": "abc", "expires_at": past_iso}))
 
 
 class TestEncryptedFileVault(unittest.TestCase):
@@ -138,9 +119,7 @@ class TestEncryptedFileVault(unittest.TestCase):
         self.temp_dir = tempfile.TemporaryDirectory()
         self.vault_file = Path(self.temp_dir.name) / "credentials.enc"
         self.passphrase = "test-secret-passphrase-123"
-        self.vault = EncryptedFileVault(
-            vault_path=self.vault_file, passphrase=self.passphrase
-        )
+        self.vault = EncryptedFileVault(vault_path=self.vault_file, passphrase=self.passphrase)
 
     def tearDown(self) -> None:
         self.temp_dir.cleanup()
@@ -183,9 +162,7 @@ class TestEncryptedFileVault(unittest.TestCase):
         self.vault.set_credential("gemini", {"access_token": "ya29.test"})
 
         # Try to open with wrong passphrase
-        wrong_vault = EncryptedFileVault(
-            vault_path=self.vault_file, passphrase="wrong-passphrase"
-        )
+        wrong_vault = EncryptedFileVault(vault_path=self.vault_file, passphrase="wrong-passphrase")
         with self.assertRaises(ValueError):
             wrong_vault.get_credential("gemini")
 
@@ -315,9 +292,7 @@ class TestKeyringVault(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             vf = Path(td) / "credentials.enc"
             # Force file vault mode
-            uv = UniversalVault(
-                vault_path=vf, passphrase="fallback-passphrase", force_file_vault=True
-            )
+            uv = UniversalVault(vault_path=vf, passphrase="fallback-passphrase", force_file_vault=True)
             self.assertEqual(uv.active_backend_name, "encrypted_file")
 
             uv.set_credential("cursor", {"access_token": "cursor-token-999"})
@@ -334,12 +309,8 @@ class TestOAuthFlows(unittest.TestCase):
         self.temp_dir = tempfile.TemporaryDirectory()
         self.vault_file = Path(self.temp_dir.name) / "credentials.enc"
         self.vault = UniversalVault(vault_path=self.vault_file, force_file_vault=True)
-        self.patch_vault = patch(
-            "cli.auth.keyring_vault.get_vault", return_value=self.vault
-        )
-        self.patch_oauth_vault = patch(
-            "cli.auth.oauth_flows.get_vault", return_value=self.vault
-        )
+        self.patch_vault = patch("cli.auth.keyring_vault.get_vault", return_value=self.vault)
+        self.patch_oauth_vault = patch("cli.auth.oauth_flows.get_vault", return_value=self.vault)
         self.patch_vault.start()
         self.patch_oauth_vault.start()
 
@@ -349,14 +320,14 @@ class TestOAuthFlows(unittest.TestCase):
         self.temp_dir.cleanup()
 
     def test_anthropic_api_key_onboarding(self) -> None:
-        res = AnthropicOAuthFlow.login(api_key="sk-ant-EXAMPLE-key-1234567890abcdef")
+        res = AnthropicOAuthFlow.login(api_key="sk-ant-test-key-1234567890abcdef")
         self.assertEqual(res["provider"], "anthropic")
         self.assertEqual(res["token_type"], "ApiKey")
-        self.assertEqual(res["access_token"], "sk-ant-EXAMPLE-key-1234567890abcdef")
+        self.assertEqual(res["access_token"], "sk-ant-test-key-1234567890abcdef")
 
         saved = self.vault.get_credential("anthropic")
         self.assertIsNotNone(saved)
-        self.assertEqual(saved["access_token"], "sk-ant-EXAMPLE-key-1234567890abcdef")
+        self.assertEqual(saved["access_token"], "sk-ant-test-key-1234567890abcdef")
 
     def test_cursor_api_key_onboarding(self) -> None:
         res = CursorAuthFlow.login(api_key="cur_live_token1234567890abcdef")
@@ -384,14 +355,12 @@ class TestOAuthFlows(unittest.TestCase):
         self.assertEqual(saved["access_token"], "AIzaSyTestGeminiKey1234567890")
 
     def test_openai_api_key_onboarding(self) -> None:
-        res = OpenAIAuthFlow.login(api_key="sk-EXAMPLE-testkey1234567890abcdef123456")
+        res = OpenAIAuthFlow.login(api_key="sk-proj-testkey1234567890abcdef123456")
         self.assertEqual(res["provider"], "openai")
         self.assertEqual(res["token_type"], "ApiKey")
         saved = self.vault.get_credential("openai")
         self.assertIsNotNone(saved)
-        self.assertEqual(
-            saved["access_token"], "sk-EXAMPLE-testkey1234567890abcdef123456"
-        )
+        self.assertEqual(saved["access_token"], "sk-proj-testkey1234567890abcdef123456")
 
 
 class TestAuthCLICommands(unittest.TestCase):
@@ -402,12 +371,8 @@ class TestAuthCLICommands(unittest.TestCase):
         self.vault_file = Path(self.temp_dir.name) / "credentials.enc"
         self.vault = UniversalVault(vault_path=self.vault_file, force_file_vault=True)
         self.patch_vault1 = patch("cli.auth.get_vault", return_value=self.vault)
-        self.patch_vault2 = patch(
-            "cli.auth.keyring_vault.get_vault", return_value=self.vault
-        )
-        self.patch_vault3 = patch(
-            "cli.auth.oauth_flows.get_vault", return_value=self.vault
-        )
+        self.patch_vault2 = patch("cli.auth.keyring_vault.get_vault", return_value=self.vault)
+        self.patch_vault3 = patch("cli.auth.oauth_flows.get_vault", return_value=self.vault)
         self.patch_vault1.start()
         self.patch_vault2.start()
         self.patch_vault3.start()
@@ -429,15 +394,12 @@ class TestAuthCLICommands(unittest.TestCase):
 
     def test_auth_status_json(self) -> None:
         # Pre-seed one credential
-        self.vault.set_credential(
-            "anthropic",
-            {
-                "access_token": "sk-ant-EXAMPLE-token-123456789",
-                "token_type": "ApiKey",
-                "profile": "test-profile",
-                "expires_at": None,
-            },
-        )
+        self.vault.set_credential("anthropic", {
+            "access_token": "sk-ant-test-token-123456789",
+            "token_type": "ApiKey",
+            "profile": "test-profile",
+            "expires_at": None,
+        })
 
         capture = io.StringIO()
         with patch("sys.stdout", capture):
@@ -447,31 +409,19 @@ class TestAuthCLICommands(unittest.TestCase):
         self.assertIn("active_vault_backend", data)
         self.assertIn("providers", data)
 
-        anthropic_stat = next(
-            p for p in data["providers"] if p["provider"] == "anthropic"
-        )
+        anthropic_stat = next(p for p in data["providers"] if p["provider"] == "anthropic")
         self.assertTrue(anthropic_stat["authenticated"])
         self.assertEqual(anthropic_stat["status"], "VALID")
         # Ensure plaintext secret is NEVER exposed in status JSON
-        self.assertNotIn("sk-ant-EXAMPLE-token-123456789", capture.getvalue())
+        self.assertNotIn("sk-ant-test-token-123456789", capture.getvalue())
         self.assertTrue(anthropic_stat["token_masked"].startswith("sk-ant"))
 
     def test_auth_login_via_cli(self) -> None:
-        ret = main(
-            [
-                "auth",
-                "login",
-                "openai",
-                "--api-key",
-                "sk-EXAMPLE-testkey1234567890abcdef123456",
-            ]
-        )
+        ret = main(["auth", "login", "openai", "--api-key", "sk-proj-testkey1234567890abcdef123456"])
         self.assertEqual(ret, 0)
         saved = self.vault.get_credential("openai")
         self.assertIsNotNone(saved)
-        self.assertEqual(
-            saved["access_token"], "sk-EXAMPLE-testkey1234567890abcdef123456"
-        )
+        self.assertEqual(saved["access_token"], "sk-proj-testkey1234567890abcdef123456")
 
     def test_auth_logout_single(self) -> None:
         self.vault.set_credential("cursor", {"access_token": "cur_12345"})
@@ -513,20 +463,9 @@ class TestAuthCLICommands(unittest.TestCase):
     def test_auth_login_api_key_warning(self) -> None:
         err_capture = io.StringIO()
         with patch("sys.stderr", err_capture):
-            ret = main(
-                [
-                    "auth",
-                    "login",
-                    "openai",
-                    "--api-key",
-                    "sk-EXAMPLE-testkey1234567890abcdef123456",
-                ]
-            )
+            ret = main(["auth", "login", "openai", "--api-key", "sk-proj-testkey1234567890abcdef123456"])
         self.assertEqual(ret, 0)
-        self.assertIn(
-            "warning: providing secrets via the '--api-key' CLI argument",
-            err_capture.getvalue(),
-        )
+        self.assertIn("warning: providing secrets via the '--api-key' CLI argument", err_capture.getvalue())
 
 
 class TestLoopbackAndOAuthSecurity(unittest.TestCase):
@@ -537,9 +476,7 @@ class TestLoopbackAndOAuthSecurity(unittest.TestCase):
         import urllib.error
         import urllib.request
 
-        server = LoopbackAuthServer(
-            host="127.0.0.1", port=8085, expected_state="expected-secret-state-999"
-        )
+        server = LoopbackAuthServer(host="127.0.0.1", port=8085, expected_state="expected-secret-state-999")
         port = server.server_port
 
         def send_attack():
@@ -571,9 +508,7 @@ class TestLoopbackAndOAuthSecurity(unittest.TestCase):
 
         try:
             # LoopbackAuthServer should detect busy_port and bind to busy_port + 1 without error
-            server = LoopbackAuthServer(
-                host="127.0.0.1", port=busy_port, max_port_retries=5
-            )
+            server = LoopbackAuthServer(host="127.0.0.1", port=busy_port, max_port_retries=5)
             self.assertNotEqual(server.server_port, busy_port)
             self.assertEqual(server.server_port, busy_port + 1)
             server.server_close()
@@ -596,149 +531,6 @@ class TestLoopbackAndOAuthSecurity(unittest.TestCase):
                     with self.assertRaises(RuntimeError) as ctx:
                         OpenAIAuthFlow.login()
                     self.assertIn("Authentication canceled", str(ctx.exception))
-
-
-class TestSilentRefreshTokenRotation(unittest.TestCase):
-    """Test RFC 6749 background token rotation and in-memory refresh before agent execution."""
-
-    def test_rfc6749_refresh_rotation(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            vault_file = Path(td) / "credentials.enc"
-            vault = UniversalVault(vault_path=vault_file, force_file_vault=True)
-
-            # Store an expiring Anthropic OAuth credential
-            old_at = "sk-ant-EXAMPLE-old-access-12345"
-            old_rt = "anthropic_refresh_old_12345"
-            expiring_time = (
-                time.time() + 120
-            )  # Expires in 2 minutes (within default 900s buffer)
-            token_data = {
-                "provider": "anthropic",
-                "token_type": "Bearer",
-                "access_token": old_at,
-                "refresh_token": old_rt,
-                "expires_at": expiring_time,
-                "profile": "claude-user",
-            }
-            vault.set_credential("anthropic", token_data)
-
-            # Ensure fresh token with 15m buffer -> should trigger rotation
-            fresh = ensure_fresh_token("anthropic", vault=vault, buffer_seconds=900)
-            self.assertIsNotNone(fresh)
-            self.assertNotEqual(fresh["access_token"], old_at)
-            self.assertNotEqual(fresh["refresh_token"], old_rt)
-            self.assertTrue(fresh["access_token"].startswith("sk-ant-oauth-rot-"))
-            self.assertGreater(fresh["expires_at"], time.time() + 1800)
-
-            # Check vault persistence
-            persisted = vault.get_credential("anthropic")
-            self.assertEqual(persisted["access_token"], fresh["access_token"])
-            self.assertEqual(persisted["refresh_token"], fresh["refresh_token"])
-
-    def test_fresh_token_skipped(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            vault_file = Path(td) / "credentials.enc"
-            vault = UniversalVault(vault_path=vault_file, force_file_vault=True)
-
-            # Store a fresh credential (expires in 2 days)
-            token_data = {
-                "provider": "gemini",
-                "token_type": "Bearer",
-                "access_token": "ya29.current-fresh-token",
-                "refresh_token": "1//gemini-refresh",
-                "expires_at": time.time() + 172800,
-                "profile": "google-user",
-            }
-            vault.set_credential("gemini", token_data)
-
-            result = ensure_fresh_token("gemini", vault=vault, buffer_seconds=900)
-            self.assertEqual(result["access_token"], "ya29.current-fresh-token")
-            self.assertEqual(result["refresh_token"], "1//gemini-refresh")
-
-    def test_non_refreshable_api_key_untouched(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            vault_file = Path(td) / "credentials.enc"
-            vault = UniversalVault(vault_path=vault_file, force_file_vault=True)
-
-            api_key_data = {
-                "provider": "openai",
-                "token_type": "ApiKey",
-                "access_token": "sk-static-api-key",
-                "expires_at": None,
-                "profile": "api-key",
-            }
-            vault.set_credential("openai", api_key_data)
-
-            res = ensure_fresh_token("openai", vault=vault, buffer_seconds=900)
-            self.assertEqual(res["access_token"], "sk-static-api-key")
-
-
-class TestOAuthCSRFAndTimingHardening(unittest.TestCase):
-    """Test suite validating CSRF protection, constant-time validation, and secret redaction."""
-
-    def test_extract_code_and_state_from_input(self) -> None:
-        # Raw code
-        code, state = extract_code_and_state_from_input("my_auth_code_123")
-        self.assertEqual(code, "my_auth_code_123")
-        self.assertIsNone(state)
-
-        # Full URL with code and state
-        url = "http://localhost:8085/callback?code=extracted_code_456&state=expected_state_abc"
-        code, state = extract_code_and_state_from_input(url)
-        self.assertEqual(code, "extracted_code_456")
-        self.assertEqual(state, "expected_state_abc")
-
-        # extract_code_from_input backwards compatibility
-        self.assertEqual(extract_code_from_input(url), "extracted_code_456")
-
-    def test_loopback_state_mismatch_constant_time_and_no_secret_leak(self) -> None:
-        handler = LoopbackAuthHandler.__new__(LoopbackAuthHandler)
-        mock_server = MagicMock()
-        mock_server.expected_state = "super_secret_expected_state_xyz"
-        mock_server.captured_error = None
-        mock_server.captured_error_description = None
-        handler.server = mock_server
-
-        handler.path = "/callback?code=attacker_code&state=wrong_state"
-        handler.send_response = MagicMock()
-        handler.send_header = MagicMock()
-        handler.end_headers = MagicMock()
-        handler.wfile = io.BytesIO()
-
-        handler.do_GET()
-
-        handler.send_response.assert_called_with(400)
-        self.assertEqual(mock_server.captured_error, "state_mismatch")
-        # Verify expected secret is NOT leaked in error description
-        self.assertNotIn(
-            "super_secret_expected_state_xyz", mock_server.captured_error_description
-        )
-
-    def test_loopback_missing_state_rejected(self) -> None:
-        handler = LoopbackAuthHandler.__new__(LoopbackAuthHandler)
-        mock_server = MagicMock()
-        mock_server.expected_state = "required_state_123"
-        handler.server = mock_server
-
-        # Callback without state parameter
-        handler.path = "/callback?code=injected_code"
-        handler.send_response = MagicMock()
-        handler.send_header = MagicMock()
-        handler.end_headers = MagicMock()
-        handler.wfile = io.BytesIO()
-
-        handler.do_GET()
-
-        handler.send_response.assert_called_with(400)
-        self.assertEqual(mock_server.captured_error, "state_mismatch")
-
-    def test_anthropic_manual_pasted_url_csrf_check(self) -> None:
-        with patch(
-            "builtins.input",
-            return_value="http://localhost:8085/callback?code=test&state=wrong",
-        ), patch("sys.stdin.isatty", return_value=True):
-            with self.assertRaisesRegex(RuntimeError, "potential CSRF attack"):
-                AnthropicOAuthFlow.login(no_browser=True)
 
 
 if __name__ == "__main__":

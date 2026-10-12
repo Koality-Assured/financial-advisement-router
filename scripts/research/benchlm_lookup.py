@@ -8,14 +8,14 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
-import urllib.request
 from pathlib import Path
+import sys
 from typing import Any
+import urllib.request
 
 _LIB = Path(__file__).resolve().parents[1] / "_lib"
 sys.path.insert(0, str(_LIB))
-from paths import REPO_ROOT as ROOT
+from paths import REPO_ROOT as ROOT  # noqa: E402
 
 CACHE_DIR = ROOT / "scratch" / "cache"
 CACHE_FILE = CACHE_DIR / "benchlm_benchmarks.json"
@@ -23,130 +23,6 @@ BENCHLM_DATA_URL = "https://benchlm.ai/data/benchmarks.json"
 
 # Representative offline benchmark & pricing data fallback
 SAMPLE_MODELS: list[dict[str, Any]] = [
-    {
-        "id": "claude-5-5-sonnet",
-        "name": "Claude 5.5 Sonnet",
-        "provider": "Anthropic",
-        "context_window": 256000,
-        "input_price_per_m": 1.50,
-        "output_price_per_m": 6.00,
-        "cached_input_price_per_m": 0.15,
-        "tokens_per_sec": 92.0,
-        "latency_first_token_ms": 310,
-        "scores": {
-            "overall": 94.6,
-            "coding": 96.2,
-            "reasoning": 95.5,
-            "agentic": 96.8,
-            "multimodal": 93.4,
-            "math": 94.2,
-            "cybersecurity": 92.0,
-        },
-        "benchmarks": {
-            "swe_bench_verified": 75.8,
-            "humaneval": 96.5,
-            "livecodebench": 71.2,
-            "gpqa_diamond": 72.4,
-            "mmlu_pro": 83.5,
-            "arc_agi_2": 58.2,
-            "osworld": 48.0,
-        },
-        "evidence_tier": "Supported",
-        "last_updated": "2026-10-01",
-    },
-    {
-        "id": "gpt-6-0-luna",
-        "name": "GPT 6.0 Luna",
-        "provider": "OpenAI",
-        "context_window": 256000,
-        "input_price_per_m": 1.25,
-        "output_price_per_m": 5.00,
-        "cached_input_price_per_m": 0.30,
-        "tokens_per_sec": 110.0,
-        "latency_first_token_ms": 250,
-        "scores": {
-            "overall": 93.8,
-            "coding": 94.5,
-            "reasoning": 94.0,
-            "agentic": 95.0,
-            "multimodal": 94.2,
-            "math": 93.5,
-            "cybersecurity": 90.1,
-        },
-        "benchmarks": {
-            "swe_bench_verified": 73.1,
-            "humaneval": 95.0,
-            "livecodebench": 68.4,
-            "gpqa_diamond": 70.0,
-            "mmlu_pro": 81.2,
-            "arc_agi_2": 54.0,
-            "osworld": 45.1,
-        },
-        "evidence_tier": "Supported",
-        "last_updated": "2026-10-01",
-    },
-    {
-        "id": "gemini-3-8-flash",
-        "name": "Gemini 3.8 Flash",
-        "provider": "Google",
-        "context_window": 1048576,
-        "input_price_per_m": 0.15,
-        "output_price_per_m": 0.60,
-        "cached_input_price_per_m": 0.0375,
-        "tokens_per_sec": 160.0,
-        "latency_first_token_ms": 180,
-        "scores": {
-            "overall": 92.5,
-            "coding": 93.2,
-            "reasoning": 92.0,
-            "agentic": 93.5,
-            "multimodal": 95.8,
-            "math": 91.5,
-            "cybersecurity": 88.0,
-        },
-        "benchmarks": {
-            "swe_bench_verified": 68.2,
-            "humaneval": 93.5,
-            "livecodebench": 64.0,
-            "gpqa_diamond": 67.5,
-            "mmlu_pro": 78.2,
-            "arc_agi_2": 51.0,
-            "osworld": 43.0,
-        },
-        "evidence_tier": "Supported",
-        "last_updated": "2026-10-05",
-    },
-    {
-        "id": "gemini-3-8-pro",
-        "name": "Gemini 3.8 Pro",
-        "provider": "Google",
-        "context_window": 2097152,
-        "input_price_per_m": 1.25,
-        "output_price_per_m": 5.00,
-        "cached_input_price_per_m": 0.3125,
-        "tokens_per_sec": 75.0,
-        "latency_first_token_ms": 410,
-        "scores": {
-            "overall": 93.9,
-            "coding": 94.0,
-            "reasoning": 95.1,
-            "agentic": 94.8,
-            "multimodal": 96.2,
-            "math": 94.0,
-            "cybersecurity": 90.5,
-        },
-        "benchmarks": {
-            "swe_bench_verified": 72.0,
-            "humaneval": 94.2,
-            "livecodebench": 67.5,
-            "gpqa_diamond": 71.0,
-            "mmlu_pro": 82.0,
-            "arc_agi_2": 55.0,
-            "osworld": 45.0,
-        },
-        "evidence_tier": "Supported",
-        "last_updated": "2026-10-05",
-    },
     {
         "id": "claude-3-7-sonnet",
         "name": "Claude 3.7 Sonnet (Hybrid)",
@@ -387,11 +263,7 @@ def fetch_or_load_benchmarks(force_refresh: bool = False) -> list[dict[str, Any]
             )
             with urllib.request.urlopen(req, timeout=5) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-                models = (
-                    data
-                    if isinstance(data, list)
-                    else data.get("models", SAMPLE_MODELS)
-                )
+                models = data if isinstance(data, list) else data.get("models", SAMPLE_MODELS)
                 CACHE_DIR.mkdir(parents=True, exist_ok=True)
                 CACHE_FILE.write_text(json.dumps(models, indent=2), encoding="utf-8")
                 return models
@@ -410,9 +282,7 @@ def fetch_or_load_benchmarks(force_refresh: bool = False) -> list[dict[str, Any]
 
 def compute_value_score(model: dict[str, Any], category: str = "overall") -> float:
     """Calculate price-performance efficiency (score / combined token price)."""
-    score = model.get("scores", {}).get(
-        category, model.get("scores", {}).get("overall", 50.0)
-    )
+    score = model.get("scores", {}).get(category, model.get("scores", {}).get("overall", 50.0))
     inp_price = model.get("input_price_per_m", 1.0)
     out_price = model.get("output_price_per_m", 1.0)
     blended_price = (inp_price * 0.75) + (out_price * 0.25)
@@ -435,28 +305,20 @@ def filter_and_rank_models(
     for m in models:
         if provider and provider.lower() not in m.get("provider", "").lower():
             continue
-        if (
-            max_input_price is not None
-            and m.get("input_price_per_m", 0) > max_input_price
-        ):
+        if max_input_price is not None and m.get("input_price_per_m", 0) > max_input_price:
             continue
-        if (
-            max_output_price is not None
-            and m.get("output_price_per_m", 0) > max_output_price
-        ):
+        if max_output_price is not None and m.get("output_price_per_m", 0) > max_output_price:
             continue
         if min_speed is not None and m.get("tokens_per_sec", 0) < min_speed:
             continue
-
+        
         m_copy = dict(m)
         m_copy["value_index"] = compute_value_score(m_copy, category)
         filtered.append(m_copy)
 
     if sort_by == "score":
         filtered.sort(
-            key=lambda x: x.get("scores", {}).get(
-                category, x.get("scores", {}).get("overall", 0)
-            ),
+            key=lambda x: x.get("scores", {}).get(category, x.get("scores", {}).get("overall", 0)),
             reverse=True,
         )
     elif sort_by == "price_asc":
@@ -480,16 +342,10 @@ def format_markdown_table(models: list[dict[str, Any]], category: str) -> str:
         "| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |",
     ]
     for idx, m in enumerate(models, 1):
-        score = m.get("scores", {}).get(
-            category, m.get("scores", {}).get("overall", "N/A")
-        )
+        score = m.get("scores", {}).get(category, m.get("scores", {}).get("overall", "N/A"))
         inp = f"${m.get('input_price_per_m', 0.0):.2f}"
         out = f"${m.get('output_price_per_m', 0.0):.2f}"
-        cached = (
-            f"${m.get('cached_input_price_per_m', 0.0):.4f}"
-            if "cached_input_price_per_m" in m
-            else "N/A"
-        )
+        cached = f"${m.get('cached_input_price_per_m', 0.0):.4f}" if "cached_input_price_per_m" in m else "N/A"
         speed = f"{m.get('tokens_per_sec', 0.0):.1f}"
         value = f"{m.get('value_index', 0.0):.1f}"
         tier = m.get("evidence_tier", "Supported")
@@ -497,9 +353,7 @@ def format_markdown_table(models: list[dict[str, Any]], category: str) -> str:
             f"| {idx} | **{m.get('name')}** | {m.get('provider')} | **{score}** | {inp} / {out} | {cached} | {speed} | `{value}` | {tier} |"
         )
     lines.append("")
-    lines.append(
-        "*Data sourced from [BenchLM.ai](https://benchlm.ai/) with verified benchmark provenance.*"
-    )
+    lines.append("*Data sourced from [BenchLM.ai](https://benchlm.ai/) with verified benchmark provenance.*")
     return "\n".join(lines)
 
 
@@ -509,15 +363,7 @@ def main(argv: list[str] | None = None) -> int:
         "--category",
         type=str,
         default="overall",
-        choices=[
-            "overall",
-            "coding",
-            "reasoning",
-            "agentic",
-            "multimodal",
-            "math",
-            "cybersecurity",
-        ],
+        choices=["overall", "coding", "reasoning", "agentic", "multimodal", "math", "cybersecurity"],
         help="Benchmark evaluation domain",
     )
     parser.add_argument(

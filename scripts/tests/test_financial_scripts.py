@@ -10,7 +10,7 @@ import io
 import json
 import sys
 import unittest
-from contextlib import redirect_stderr, redirect_stdout
+from contextlib import redirect_stdout, redirect_stderr
 from decimal import Decimal
 from pathlib import Path
 
@@ -18,60 +18,61 @@ _SCRIPTS = Path(__file__).resolve().parents[1]
 _FIN = _SCRIPTS / "financial"
 sys.path.insert(0, str(_FIN))
 
-from _ledger import (
+from _ledger import (  # noqa: E402
     ADVISORY_STAMP,
     FloatLedgerError,
     ledger_context,
+    quantize_money,
     quantize_multiple,
+    to_decimal,
 )
-from comps_calculator import (
+from comps_calculator import (  # noqa: E402
     arithmetic_mean,
     compute_peer_multiples,
     compute_target_implied_valuations,
     harmonic_mean,
+    main as comps_main,
     run_comps,
     summarize_multiples,
     valuation_percentiles,
 )
-from comps_calculator import (
-    main as comps_main,
-)
-from dcf_calculator import (
+from dcf_calculator import (  # noqa: E402
     capm_cost_of_equity,
+    dcf_enterprise_value,
     gordon_terminal,
+    main as dcf_main,
+    sensitivity_table,
+    value_from_fixture,
     wacc,
 )
-from dcf_calculator import (
-    main as dcf_main,
-)
-from edgar_ingest import (
+from edgar_ingest import (  # noqa: E402
+    extract_gaap_facts,
     ingest_payload,
+    main as edgar_main,
     pad_cik,
 )
-from edgar_ingest import (
-    main as edgar_main,
-)
-from monte_carlo_var import (
+from monte_carlo_var import (  # noqa: E402
     bootstrap_paths,
     historical_cvar,
     historical_var,
-)
-from monte_carlo_var import (
     main as var_main,
+    parametric_var,
+    run_fixture as run_var_fixture,
 )
-from portfolio_optimizer import (
+from portfolio_optimizer import (  # noqa: E402
     main as portfolio_main,
-)
-from portfolio_optimizer import (
+    max_sharpe_weights,
     min_variance_weights,
+    optimize_from_fixture,
+    portfolio_variance,
+    sortino_ratio,
+    target_return_weights,
 )
-from wash_sale_detector import (
+from wash_sale_detector import (  # noqa: E402
     detect_wash_sales,
     get_replacement_suggestions,
-    parse_date,
-)
-from wash_sale_detector import (
     main as wash_sale_main,
+    parse_date,
 )
 
 FIXTURES = _FIN / "fixtures"
@@ -95,10 +96,10 @@ class TestCompsCalculator(unittest.TestCase):
                 "book_value": "100.00",
             }
             m1 = compute_peer_multiples(peer1)
-            self.assertEqual(m1["ev_ebitda"], Decimal(10))
-            self.assertEqual(m1["pe"], Decimal(16))
+            self.assertEqual(m1["ev_ebitda"], Decimal("10"))
+            self.assertEqual(m1["pe"], Decimal("16"))
             self.assertEqual(m1["ev_revenue"], Decimal("2.5"))
-            self.assertEqual(m1["price_to_book"], Decimal(4))
+            self.assertEqual(m1["price_to_book"], Decimal("4"))
 
             # Derived from price and eps
             peer2 = {
@@ -107,7 +108,7 @@ class TestCompsCalculator(unittest.TestCase):
                 "eps": "3.00",
             }
             m2 = compute_peer_multiples(peer2)
-            self.assertEqual(m2["pe"], Decimal(20))
+            self.assertEqual(m2["pe"], Decimal("20"))
 
             # Direct multiples provided
             peer3 = {
@@ -133,49 +134,43 @@ class TestCompsCalculator(unittest.TestCase):
 
     def test_arithmetic_mean(self) -> None:
         with ledger_context():
-            vals = [Decimal(10), Decimal(20), Decimal(30)]
-            self.assertEqual(arithmetic_mean(vals), Decimal(20))
+            vals = [Decimal("10"), Decimal("20"), Decimal("30")]
+            self.assertEqual(arithmetic_mean(vals), Decimal("20"))
             with self.assertRaises(ValueError):
                 arithmetic_mean([])
 
     def test_harmonic_mean(self) -> None:
         with ledger_context():
             # Classic harmonic mean of 10 and 20: 2 / (1/10 + 1/20) = 2 / (3/20) = 40/3 = 13.3333...
-            vals = [Decimal(10), Decimal(20)]
+            vals = [Decimal("10"), Decimal("20")]
             h = harmonic_mean(vals)
-            expected = Decimal(40) / Decimal(3)
+            expected = Decimal("40") / Decimal("3")
             self.assertEqual(quantize_multiple(h), quantize_multiple(expected))
             # Harmonic mean is strictly less than or equal to arithmetic mean
             self.assertTrue(h <= arithmetic_mean(vals))
 
             # Non-positive values raise error if no positive values remain
             with self.assertRaises(ValueError):
-                harmonic_mean([Decimal(-5), Decimal(0)])
+                harmonic_mean([Decimal("-5"), Decimal("0")])
 
     def test_valuation_percentiles(self) -> None:
         with ledger_context():
-            vals = [
-                Decimal(10),
-                Decimal(12),
-                Decimal(14),
-                Decimal(16),
-                Decimal(18),
-            ]
+            vals = [Decimal("10"), Decimal("12"), Decimal("14"), Decimal("16"), Decimal("18")]
             pcts = valuation_percentiles(vals)
-            self.assertEqual(pcts["min"], Decimal(10))
-            self.assertEqual(pcts["max"], Decimal(18))
-            self.assertEqual(pcts["median"], Decimal(14))
-            self.assertEqual(pcts["p25"], Decimal(12))
-            self.assertEqual(pcts["p75"], Decimal(16))
+            self.assertEqual(pcts["min"], Decimal("10"))
+            self.assertEqual(pcts["max"], Decimal("18"))
+            self.assertEqual(pcts["median"], Decimal("14"))
+            self.assertEqual(pcts["p25"], Decimal("12"))
+            self.assertEqual(pcts["p75"], Decimal("16"))
 
             # Single value edge case
-            single_pcts = valuation_percentiles([Decimal(15)])
-            self.assertEqual(single_pcts["median"], Decimal(15))
-            self.assertEqual(single_pcts["min"], Decimal(15))
+            single_pcts = valuation_percentiles([Decimal("15")])
+            self.assertEqual(single_pcts["median"], Decimal("15"))
+            self.assertEqual(single_pcts["min"], Decimal("15"))
 
     def test_summarize_multiples(self) -> None:
         with ledger_context():
-            vals = [Decimal(10), Decimal(12), Decimal(14)]
+            vals = [Decimal("10"), Decimal("12"), Decimal("14")]
             summary = summarize_multiples(vals)
             self.assertEqual(summary["count"], 3)
             self.assertEqual(summary["valid_count"], 3)
@@ -197,9 +192,7 @@ class TestCompsCalculator(unittest.TestCase):
             }
             implied = compute_target_implied_valuations(stats, "ev_ebitda", target)
             # harmonic: ev = 10 * 20m = 200m; equity = 200m - 10m = 190m; per_share = 190m / 2m = 95.00
-            self.assertEqual(
-                implied["harmonic_mean"]["enterprise_value"], "200000000.00"
-            )
+            self.assertEqual(implied["harmonic_mean"]["enterprise_value"], "200000000.00")
             self.assertEqual(implied["harmonic_mean"]["equity_value"], "190000000.00")
             self.assertEqual(implied["harmonic_mean"]["value_per_share"], "95.00")
 
@@ -216,16 +209,10 @@ class TestCompsCalculator(unittest.TestCase):
                 "net_debt": "10000000.00",
                 "shares_outstanding": "2000000",
             }
-            implied_bv = compute_target_implied_valuations(
-                stats, "price_to_book", target_bv
-            )
+            implied_bv = compute_target_implied_valuations(stats, "price_to_book", target_bv)
             # harmonic: equity = 3 * 50m = 150m; ev = 150m + 10m = 160m; per_share = 150m / 2m = 75.00
-            self.assertEqual(
-                implied_bv["harmonic_mean"]["equity_value"], "150000000.00"
-            )
-            self.assertEqual(
-                implied_bv["harmonic_mean"]["enterprise_value"], "160000000.00"
-            )
+            self.assertEqual(implied_bv["harmonic_mean"]["equity_value"], "150000000.00")
+            self.assertEqual(implied_bv["harmonic_mean"]["enterprise_value"], "160000000.00")
             self.assertEqual(implied_bv["harmonic_mean"]["value_per_share"], "75.00")
 
             # Target with book_value_per_share
@@ -234,17 +221,11 @@ class TestCompsCalculator(unittest.TestCase):
                 "net_debt": "10000000.00",
                 "shares_outstanding": "2000000",
             }
-            implied_bvps = compute_target_implied_valuations(
-                stats, "price_to_book", target_bvps
-            )
+            implied_bvps = compute_target_implied_valuations(stats, "price_to_book", target_bvps)
             # harmonic: per_share = 3 * 25 = 75.00; equity = 75 * 2m = 150m; ev = 150m + 10m = 160m
             self.assertEqual(implied_bvps["harmonic_mean"]["value_per_share"], "75.00")
-            self.assertEqual(
-                implied_bvps["harmonic_mean"]["equity_value"], "150000000.00"
-            )
-            self.assertEqual(
-                implied_bvps["harmonic_mean"]["enterprise_value"], "160000000.00"
-            )
+            self.assertEqual(implied_bvps["harmonic_mean"]["equity_value"], "150000000.00")
+            self.assertEqual(implied_bvps["harmonic_mean"]["enterprise_value"], "160000000.00")
 
     def test_comps_fixture_and_replay(self) -> None:
         fixture = _load("synthetic_comps.json")
@@ -319,31 +300,9 @@ class TestWashSaleDetector(unittest.TestCase):
 
     def test_wash_sale_subsequent_purchase(self) -> None:
         txs = [
-            {
-                "trade_id": "B1",
-                "date": "2026-01-01",
-                "symbol": "XYZ",
-                "action": "BUY",
-                "quantity": "100",
-                "price": "100.00",
-            },
-            {
-                "trade_id": "S1",
-                "date": "2026-02-01",
-                "symbol": "XYZ",
-                "action": "SELL",
-                "quantity": "100",
-                "price": "80.00",
-                "cost_basis_per_share": "100.00",
-            },
-            {
-                "trade_id": "B2",
-                "date": "2026-02-15",
-                "symbol": "XYZ",
-                "action": "BUY",
-                "quantity": "100",
-                "price": "85.00",
-            },
+            {"trade_id": "B1", "date": "2026-01-01", "symbol": "XYZ", "action": "BUY", "quantity": "100", "price": "100.00"},
+            {"trade_id": "S1", "date": "2026-02-01", "symbol": "XYZ", "action": "SELL", "quantity": "100", "price": "80.00", "cost_basis_per_share": "100.00"},
+            {"trade_id": "B2", "date": "2026-02-15", "symbol": "XYZ", "action": "BUY", "quantity": "100", "price": "85.00"},
         ]
         res = detect_wash_sales(txs)
         self.assertEqual(res["wash_sale_count"], 1)
@@ -356,31 +315,9 @@ class TestWashSaleDetector(unittest.TestCase):
 
     def test_wash_sale_prior_purchase(self) -> None:
         txs = [
-            {
-                "trade_id": "B1",
-                "date": "2026-01-01",
-                "symbol": "XYZ",
-                "action": "BUY",
-                "quantity": "50",
-                "price": "100.00",
-            },
-            {
-                "trade_id": "B2",
-                "date": "2026-01-20",
-                "symbol": "XYZ",
-                "action": "BUY",
-                "quantity": "50",
-                "price": "90.00",
-            },
-            {
-                "trade_id": "S1",
-                "date": "2026-02-05",
-                "symbol": "XYZ",
-                "action": "SELL",
-                "quantity": "50",
-                "price": "80.00",
-                "cost_basis_per_share": "100.00",
-            },
+            {"trade_id": "B1", "date": "2026-01-01", "symbol": "XYZ", "action": "BUY", "quantity": "50", "price": "100.00"},
+            {"trade_id": "B2", "date": "2026-01-20", "symbol": "XYZ", "action": "BUY", "quantity": "50", "price": "90.00"},
+            {"trade_id": "S1", "date": "2026-02-05", "symbol": "XYZ", "action": "SELL", "quantity": "50", "price": "80.00", "cost_basis_per_share": "100.00"},
         ]
         res = detect_wash_sales(txs)
         self.assertEqual(res["wash_sale_count"], 1)
@@ -391,31 +328,9 @@ class TestWashSaleDetector(unittest.TestCase):
 
     def test_wash_sale_partial_disallowance(self) -> None:
         txs = [
-            {
-                "trade_id": "B1",
-                "date": "2026-01-01",
-                "symbol": "XYZ",
-                "action": "BUY",
-                "quantity": "100",
-                "price": "50.00",
-            },
-            {
-                "trade_id": "S1",
-                "date": "2026-02-01",
-                "symbol": "XYZ",
-                "action": "SELL",
-                "quantity": "100",
-                "price": "40.00",
-                "cost_basis_per_share": "50.00",
-            },
-            {
-                "trade_id": "B2",
-                "date": "2026-02-10",
-                "symbol": "XYZ",
-                "action": "BUY",
-                "quantity": "30",
-                "price": "42.00",
-            },
+            {"trade_id": "B1", "date": "2026-01-01", "symbol": "XYZ", "action": "BUY", "quantity": "100", "price": "50.00"},
+            {"trade_id": "S1", "date": "2026-02-01", "symbol": "XYZ", "action": "SELL", "quantity": "100", "price": "40.00", "cost_basis_per_share": "50.00"},
+            {"trade_id": "B2", "date": "2026-02-10", "symbol": "XYZ", "action": "BUY", "quantity": "30", "price": "42.00"},
         ]
         res = detect_wash_sales(txs)
         self.assertEqual(res["wash_sale_count"], 1)
@@ -426,32 +341,10 @@ class TestWashSaleDetector(unittest.TestCase):
 
     def test_clean_loss_outside_window(self) -> None:
         txs = [
-            {
-                "trade_id": "B1",
-                "date": "2026-01-01",
-                "symbol": "XYZ",
-                "action": "BUY",
-                "quantity": "100",
-                "price": "50.00",
-            },
-            {
-                "trade_id": "S1",
-                "date": "2026-02-01",
-                "symbol": "XYZ",
-                "action": "SELL",
-                "quantity": "100",
-                "price": "40.00",
-                "cost_basis_per_share": "50.00",
-            },
+            {"trade_id": "B1", "date": "2026-01-01", "symbol": "XYZ", "action": "BUY", "quantity": "100", "price": "50.00"},
+            {"trade_id": "S1", "date": "2026-02-01", "symbol": "XYZ", "action": "SELL", "quantity": "100", "price": "40.00", "cost_basis_per_share": "50.00"},
             # Buy 35 days later (outside 30-day window)
-            {
-                "trade_id": "B2",
-                "date": "2026-03-08",
-                "symbol": "XYZ",
-                "action": "BUY",
-                "quantity": "100",
-                "price": "45.00",
-            },
+            {"trade_id": "B2", "date": "2026-03-08", "symbol": "XYZ", "action": "BUY", "quantity": "100", "price": "45.00"},
         ]
         res = detect_wash_sales(txs)
         self.assertEqual(res["wash_sale_count"], 0)
@@ -462,23 +355,8 @@ class TestWashSaleDetector(unittest.TestCase):
     def test_holding_period_under_30_days_no_self_match(self) -> None:
         """Shares held for under 30 days and sold at a loss must not match against their own buy lot."""
         txs = [
-            {
-                "trade_id": "B1",
-                "date": "2026-01-15",
-                "symbol": "XYZ",
-                "action": "BUY",
-                "quantity": "100",
-                "price": "100.00",
-            },
-            {
-                "trade_id": "S1",
-                "date": "2026-01-25",
-                "symbol": "XYZ",
-                "action": "SELL",
-                "quantity": "100",
-                "price": "80.00",
-                "cost_basis_per_share": "100.00",
-            },
+            {"trade_id": "B1", "date": "2026-01-15", "symbol": "XYZ", "action": "BUY", "quantity": "100", "price": "100.00"},
+            {"trade_id": "S1", "date": "2026-01-25", "symbol": "XYZ", "action": "SELL", "quantity": "100", "price": "80.00", "cost_basis_per_share": "100.00"},
         ]
         res = detect_wash_sales(txs)
         self.assertEqual(res["wash_sale_count"], 0)
@@ -490,23 +368,8 @@ class TestWashSaleDetector(unittest.TestCase):
     def test_day_trade_no_self_match(self) -> None:
         """Intraday buy and sell of the same lot must not trigger a wash sale against itself."""
         txs = [
-            {
-                "trade_id": "B1",
-                "date": "2026-01-15",
-                "symbol": "XYZ",
-                "action": "BUY",
-                "quantity": "100",
-                "price": "100.00",
-            },
-            {
-                "trade_id": "S1",
-                "date": "2026-01-15",
-                "symbol": "XYZ",
-                "action": "SELL",
-                "quantity": "100",
-                "price": "80.00",
-                "cost_basis_per_share": "100.00",
-            },
+            {"trade_id": "B1", "date": "2026-01-15", "symbol": "XYZ", "action": "BUY", "quantity": "100", "price": "100.00"},
+            {"trade_id": "S1", "date": "2026-01-15", "symbol": "XYZ", "action": "SELL", "quantity": "100", "price": "80.00", "cost_basis_per_share": "100.00"},
         ]
         res = detect_wash_sales(txs)
         self.assertEqual(res["wash_sale_count"], 0)
@@ -518,31 +381,9 @@ class TestWashSaleDetector(unittest.TestCase):
     def test_day_trade_with_replacement_buy(self) -> None:
         """Day trade followed by a second acquisition matches the second acquisition as a wash sale."""
         txs = [
-            {
-                "trade_id": "B1",
-                "date": "2026-01-15",
-                "symbol": "XYZ",
-                "action": "BUY",
-                "quantity": "100",
-                "price": "100.00",
-            },
-            {
-                "trade_id": "S1",
-                "date": "2026-01-15",
-                "symbol": "XYZ",
-                "action": "SELL",
-                "quantity": "100",
-                "price": "80.00",
-                "cost_basis_per_share": "100.00",
-            },
-            {
-                "trade_id": "B2",
-                "date": "2026-01-15",
-                "symbol": "XYZ",
-                "action": "BUY",
-                "quantity": "100",
-                "price": "85.00",
-            },
+            {"trade_id": "B1", "date": "2026-01-15", "symbol": "XYZ", "action": "BUY", "quantity": "100", "price": "100.00"},
+            {"trade_id": "S1", "date": "2026-01-15", "symbol": "XYZ", "action": "SELL", "quantity": "100", "price": "80.00", "cost_basis_per_share": "100.00"},
+            {"trade_id": "B2", "date": "2026-01-15", "symbol": "XYZ", "action": "BUY", "quantity": "100", "price": "85.00"},
         ]
         res = detect_wash_sales(txs)
         self.assertEqual(res["wash_sale_count"], 1)
@@ -563,14 +404,7 @@ class TestWashSaleDetector(unittest.TestCase):
 
     def test_float_rejection_in_wash_sales(self) -> None:
         txs = [
-            {
-                "trade_id": "B1",
-                "date": "2026-01-01",
-                "symbol": "XYZ",
-                "action": "BUY",
-                "quantity": 100.5,
-                "price": "50.00",
-            },
+            {"trade_id": "B1", "date": "2026-01-01", "symbol": "XYZ", "action": "BUY", "quantity": 100.5, "price": "50.00"},
         ]
         with self.assertRaises(FloatLedgerError):
             detect_wash_sales(txs)
@@ -623,11 +457,11 @@ class TestDcfCalculator(unittest.TestCase):
 
     def test_gordon_terminal(self) -> None:
         with ledger_context():
-            tv = gordon_terminal(Decimal(100), Decimal("0.02"), Decimal("0.08"))
+            tv = gordon_terminal(Decimal("100"), Decimal("0.02"), Decimal("0.08"))
             # 100 * 1.02 / 0.06 = 102 / 0.06 = 1700
-            self.assertEqual(tv, Decimal(1700))
+            self.assertEqual(tv, Decimal("1700"))
             with self.assertRaises(ValueError):
-                gordon_terminal(Decimal(100), Decimal("0.08"), Decimal("0.08"))
+                gordon_terminal(Decimal("100"), Decimal("0.08"), Decimal("0.08"))
 
     def test_dcf_cli(self) -> None:
         f = io.StringIO()
@@ -657,17 +491,11 @@ class TestDcfCalculator(unittest.TestCase):
 class TestMonteCarloVar(unittest.TestCase):
     def test_var_calculations(self) -> None:
         with ledger_context():
-            losses = [
-                Decimal(1),
-                Decimal(2),
-                Decimal(3),
-                Decimal(4),
-                Decimal(5),
-            ]
+            losses = [Decimal("1"), Decimal("2"), Decimal("3"), Decimal("4"), Decimal("5")]
             var = historical_var(losses, Decimal("0.90"))
-            self.assertEqual(var, Decimal(5))
+            self.assertEqual(var, Decimal("5"))
             cvar = historical_cvar(losses, Decimal("0.90"))
-            self.assertEqual(cvar, Decimal(5))
+            self.assertEqual(cvar, Decimal("5"))
 
     def test_bootstrap_paths_determinism(self) -> None:
         with ledger_context():
@@ -704,8 +532,8 @@ class TestMonteCarloVar(unittest.TestCase):
 class TestPortfolioOptimizer(unittest.TestCase):
     def test_min_variance(self) -> None:
         cov = [
-            [Decimal("0.02"), Decimal(0)],
-            [Decimal(0), Decimal("0.02")],
+            [Decimal("0.02"), Decimal("0")],
+            [Decimal("0"), Decimal("0.02")],
         ]
         with ledger_context():
             w = min_variance_weights(cov)

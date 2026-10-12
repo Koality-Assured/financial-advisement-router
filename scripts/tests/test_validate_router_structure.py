@@ -17,7 +17,7 @@ _SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_SCRIPTS / "docs"))
 sys.path.insert(0, str(_SCRIPTS / "_lib"))
 
-from validate_router_structure import (
+from validate_router_structure import (  # noqa: E402
     ALLOWED_RESULTS_FAMILIES,
     check_results_layout,
 )
@@ -54,12 +54,7 @@ class ResultsLayoutTests(unittest.TestCase):
             self.assertTrue(any("missing results/" in e for e in errors))
 
     def test_unknown_top_level_dirs_fail(self) -> None:
-        leftover = (
-            "headroom-dry-run",
-            "ast-grep-dry-run",
-            "scaffolded-repos",
-            "mystery",
-        )
+        leftover = ("headroom-dry-run", "ast-grep-dry-run", "scaffolded-repos", "mystery")
         for name in leftover:
             with self.subTest(name=name):
                 with tempfile.TemporaryDirectory() as tmp:
