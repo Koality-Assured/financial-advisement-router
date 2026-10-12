@@ -22,6 +22,7 @@ Human index (not agent SoT):
 | Specialist | Role | Tier |
 | --- | --- | --- |
 | [`financial-modeling-analyst/`](./financial-modeling-analyst/) | Multi-stage DCF, CAPM WACC, Gordon growth terminal value, comps benchmarking, LBO debt waterfalls | high |
+| [`fiduciary-compliance-auditor/`](./fiduciary-compliance-auditor/) | Strictly read-only independent auditor for fiduciary standards, FINRA 2214 disclosures, and decimal precision | high |
 | [`portfolio-strategy-operator/`](./portfolio-strategy-operator/) | Mean-variance allocation, efficient frontier, Sharpe/Sortino scoring, tax-loss harvesting, rebalancing drift ledgers | high |
 | [`risk-stress-tester/`](./risk-stress-tester/) | Historical/Parametric/Bootstrap VaR, Expected Shortfall (CVaR), macroeconomic scenario stress tests | high |
 | [`sec-compliance-curator/`](./sec-compliance-curator/) | SEC EDGAR extraction, 10-K/10-Q filing analysis, Form ADV Part 1 & 2A compliance, Reg BI checklists | standard |
