@@ -41,8 +41,8 @@ High when repository structure or folder capabilities experience material shifts
 
 ## Source of truth
 
-- [`AGENTS.md`](../../../../AGENTS.md)
-- [`docs/AGENTS.md`](../../../../docs/AGENTS.md)
+- `AGENTS.md` (`../../../../AGENTS.md`; ai-router-only, optional provenance)
+- `docs/AGENTS.md` (`../../../../docs/AGENTS.md`; ai-router-only, optional provenance)
 - [`ai-tooling/skills/skill-conventions.md`](../../skill-conventions.md)
 - `python scripts/docs/validate_router_structure.py`
 
@@ -77,7 +77,9 @@ When maintaining a `README.md` file, follow this context-aware lifecycle:
 
 ## Isolation
 
-`mutate`. Parent isolates the target areas via `python scripts/routing/spawn_worktree.py check` → `add` before dispatching `documentation-ops`.
+Standalone dispatch: Follow the destination's isolation and dispatch rules. Use a registered local operator or continue in-session when those rules permit; report a capability gap if no local path supports the work.
+
+`mutate`. In ai-router, the parent creates a unique task worktree with `python scripts/routing/spawn_worktree.py create` before dispatching `documentation-ops`; overlapping areas are resolved through ordinary Git and PR review.
 
 ## How to use
 
@@ -89,7 +91,7 @@ When maintaining a `README.md` file, follow this context-aware lifecycle:
    ```bash
    python scripts/docs/validate_router_structure.py
    ```
-6. If indexed Markdown changed, refresh the search index:
+6. If indexed Markdown changed and has landed on `main`, refresh the search index from the persistent detached `scratch/qmd-main` checkout after syncing it to `origin/main`:
    ```bash
    python scripts/qmd/refresh_qmd_index.py
    ```
@@ -104,8 +106,8 @@ python scripts/docs/validate_router_structure.py --dry-run
 
 Inherits Critical cost layers: qmd for discovery; ast-grep for structured files; Headroom for bulky tool output. Skills cannot waive root AGENTS.md.
 
-[`docs/agent-session-security.md`](../../../../docs/agent-session-security.md). No credentials, secrets, or internal proprietary tokens in README files.
+the destination's root security rules (ai-router policy path is optional provenance). No credentials, secrets, or internal proprietary tokens in README files.
 
 ## Completion gates
 
-`README.md` updated and validated. Relative links verified. If indexed paths changed, `python scripts/qmd/refresh_qmd_index.py` executed. Change-history updated via script after material structural updates.
+`README.md` updated and validated. Relative links verified. If indexed paths changed, refresh only from the persistent detached QMD source at `scratch/qmd-main` after changes land on `main`; never run QMD from a task worktree. Change-history updated via script after material structural updates.

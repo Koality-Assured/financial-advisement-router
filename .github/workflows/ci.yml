@@ -1,4 +1,4 @@
-name: Harness template CI
+﻿name: Harness template CI
 
 on:
   push:
@@ -13,14 +13,21 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml==6.0.2 cryptography==43.0.1 ruff==0.6.9 bandit==1.7.10
+      - name: Run Ruff
+        run: ruff check scripts .harness
+      - name: Run Bandit
+        run: bandit -r scripts .harness -c "bandit.yaml" || bandit -r scripts .harness
       - name: Compile kept Python
         run: python -m compileall -q -f scripts .harness
       - name: Script tests
         run: |
-          python -m pip install --quiet pyyaml cryptography
           if [ -d scripts/tests ]; then python -m unittest discover -s scripts/tests -v; fi

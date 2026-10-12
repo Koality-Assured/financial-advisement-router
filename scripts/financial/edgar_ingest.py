@@ -24,8 +24,7 @@ from typing import Any
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
 
-from _ledger import (  # noqa: E402
-    ADVISORY_STAMP,
+from _ledger import (
     FloatLedgerError,
     ledger_context,
     stamp_payload,
@@ -103,7 +102,7 @@ def live_fetch(cik: str, user_agent: str) -> dict[str, Any]:
         },
     )
     time.sleep(MIN_INTERVAL_SEC)
-    with urllib.request.urlopen(req, timeout=30) as resp:  # noqa: S310 - host pinned
+    with urllib.request.urlopen(req, timeout=30) as resp:
         raw = resp.read()
     return json.loads(raw.decode("utf-8"))
 
@@ -120,7 +119,11 @@ def main(argv: list[str] | None = None) -> int:
         default="Assets,Liabilities,StockholdersEquity,NetCashProvidedByUsedInOperatingActivities",
         help="Comma-separated us-gaap tags",
     )
-    parser.add_argument("--live", action="store_true", help="Fetch data.sec.gov (requires EDGAR_USER_AGENT)")
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Fetch data.sec.gov (requires EDGAR_USER_AGENT)",
+    )
     parser.add_argument("--cik", default=None, help="CIK for --live")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
@@ -160,7 +163,14 @@ def main(argv: list[str] | None = None) -> int:
             payload = load_fixture(Path(args.fixture))
             payload["source"] = "fixture"
         result = ingest_payload(payload, tags)
-    except (OSError, KeyError, ValueError, FloatLedgerError, json.JSONDecodeError, urllib.error.URLError) as exc:
+    except (
+        OSError,
+        KeyError,
+        ValueError,
+        FloatLedgerError,
+        json.JSONDecodeError,
+        urllib.error.URLError,
+    ) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     if args.json:

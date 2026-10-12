@@ -17,17 +17,16 @@ import argparse
 import datetime as dt
 import json
 import sys
+from collections.abc import Mapping, Sequence
 from decimal import Decimal
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
 
-from _ledger import (  # noqa: E402
-    ADVISORY_STAMP,
+from _ledger import (
     FloatLedgerError,
-    decimal_sum,
     ledger_context,
     quantize_money,
     stamp_payload,
@@ -325,27 +324,36 @@ def detect_wash_sales(
                 continue
             action = str(tx["action"]).upper().strip()
             if action not in ("BUY", "SELL"):
-                raise ValueError(f"transaction {i} has invalid action '{action}'; must be BUY or SELL")
+                raise ValueError(
+                    f"transaction {i} has invalid action '{action}'; must be BUY or SELL"
+                )
             qty = to_decimal(tx["quantity"], field=f"tx[{i}].quantity")
             if qty <= 0:
                 raise ValueError(f"transaction {i} quantity must be positive")
             price = to_decimal(tx["price"], field=f"tx[{i}].price")
             basis = (
-                to_decimal(tx["cost_basis_per_share"], field=f"tx[{i}].cost_basis_per_share")
-                if "cost_basis_per_share" in tx and tx["cost_basis_per_share"] is not None
+                to_decimal(
+                    tx["cost_basis_per_share"], field=f"tx[{i}].cost_basis_per_share"
+                )
+                if "cost_basis_per_share" in tx
+                and tx["cost_basis_per_share"] is not None
                 else price
             )
             parsed_txs.append(
                 {
-                    "trade_id": str(tx.get("trade_id", f"TX-{i+1}")),
-                    "lot_id": str(tx["lot_id"]) if "lot_id" in tx and tx["lot_id"] is not None else None,
+                    "trade_id": str(tx.get("trade_id", f"TX-{i + 1}")),
+                    "lot_id": str(tx["lot_id"])
+                    if "lot_id" in tx and tx["lot_id"] is not None
+                    else None,
                     "liquidated_trade_id": (
                         str(tx["liquidated_trade_id"])
-                        if "liquidated_trade_id" in tx and tx["liquidated_trade_id"] is not None
+                        if "liquidated_trade_id" in tx
+                        and tx["liquidated_trade_id"] is not None
                         else str(tx["source_trade_id"])
                         if "source_trade_id" in tx and tx["source_trade_id"] is not None
                         else str(tx["acquired_trade_id"])
-                        if "acquired_trade_id" in tx and tx["acquired_trade_id"] is not None
+                        if "acquired_trade_id" in tx
+                        and tx["acquired_trade_id"] is not None
                         else None
                     ),
                     "date": parse_date(tx["date"]),
@@ -421,7 +429,7 @@ def detect_wash_sales(
 
     # Separate buys and sells
     buys: list[dict[str, Any]] = [
-        {**t, "available_qty": t["quantity"], "allocated_disallowed_loss": Decimal("0")}
+        {**t, "available_qty": t["quantity"], "allocated_disallowed_loss": Decimal(0)}
         for t in parsed_txs
         if t["action"] == "BUY"
     ]
@@ -430,8 +438,8 @@ def detect_wash_sales(
     wash_sale_records: list[dict[str, Any]] = []
     clean_loss_records: list[dict[str, Any]] = []
 
-    total_realized_loss = Decimal("0")
-    total_disallowed_loss = Decimal("0")
+    total_realized_loss = Decimal(0)
+    total_disallowed_loss = Decimal(0)
     symbols_with_losses: set[str] = set()
 
     with ledger_context():
@@ -482,7 +490,9 @@ def detect_wash_sales(
 
                 # Calculate adjusted replacement cost basis
                 # Disallowed loss is added to the basis of the replacement shares
-                adjusted_basis_per_share = buy["price"] + (disallowed_chunk / matched_shares)
+                adjusted_basis_per_share = buy["price"] + (
+                    disallowed_chunk / matched_shares
+                )
 
                 wash_sale_records.append(
                     {
@@ -494,11 +504,15 @@ def detect_wash_sales(
                         "window_offset_days": days_diff,
                         "disallowed_shares": str(matched_shares),
                         "sale_price": str(quantize_money(sell["price"])),
-                        "cost_basis_per_share": str(quantize_money(sell["cost_basis_per_share"])),
+                        "cost_basis_per_share": str(
+                            quantize_money(sell["cost_basis_per_share"])
+                        ),
                         "loss_per_share": str(quantize_money(loss_per_share)),
                         "disallowed_loss": str(quantize_money(-disallowed_chunk)),
                         "replacement_purchase_price": str(quantize_money(buy["price"])),
-                        "adjusted_replacement_basis_per_share": str(quantize_money(adjusted_basis_per_share)),
+                        "adjusted_replacement_basis_per_share": str(
+                            quantize_money(adjusted_basis_per_share)
+                        ),
                         "irc_holding_period_rule": "Holding period of sold shares tacks onto replacement shares under IRC 1223(3).",
                     }
                 )
@@ -515,13 +529,17 @@ def detect_wash_sales(
                         "sale_date": loss_date.isoformat(),
                         "allowed_shares": str(remaining_loss_qty),
                         "sale_price": str(quantize_money(sell["price"])),
-                        "cost_basis_per_share": str(quantize_money(sell["cost_basis_per_share"])),
+                        "cost_basis_per_share": str(
+                            quantize_money(sell["cost_basis_per_share"])
+                        ),
                         "loss_per_share": str(quantize_money(loss_per_share)),
                         "allowed_loss": str(quantize_money(allowed_loss)),
                     }
                 )
 
-        net_allowable_loss = total_realized_loss + total_disallowed_loss  # both negative
+        net_allowable_loss = (
+            total_realized_loss + total_disallowed_loss
+        )  # both negative
 
         # Generate replacement suggestions for all traded symbols that incurred realized losses
         replacement_suggestions: dict[str, list[dict[str, str]]] = {}
@@ -562,8 +580,12 @@ def main(argv: list[str] | None = None) -> int:
         default=30,
         help="One-sided window duration in days (default: 30 for 61-day window)",
     )
-    parser.add_argument("--json", action="store_true", help="Print structured JSON output")
-    parser.add_argument("--dry-run", action="store_true", help="Inspect transaction plan and exit")
+    parser.add_argument(
+        "--json", action="store_true", help="Print structured JSON output"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Inspect transaction plan and exit"
+    )
 
     args = parser.parse_args(argv)
     path = Path(args.fixture)
@@ -588,7 +610,13 @@ def main(argv: list[str] | None = None) -> int:
             window_days=args.window_days,
             symbol_filter=args.symbol,
         )
-    except (OSError, KeyError, ValueError, FloatLedgerError, json.JSONDecodeError) as exc:
+    except (
+        OSError,
+        KeyError,
+        ValueError,
+        FloatLedgerError,
+        json.JSONDecodeError,
+    ) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 

@@ -14,7 +14,9 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-REGISTRY_PATH = REPO_ROOT / "docs" / "standards" / "financial-representation-registry.json"
+REGISTRY_PATH = (
+    REPO_ROOT / "docs" / "standards" / "financial-representation-registry.json"
+)
 SCHEMA_PATH = REPO_ROOT / "docs" / "standards" / "financial-request-v1.schema.json"
 DEFAULT_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "financial-cases.json"
 
@@ -52,15 +54,22 @@ def validate_registry(registry_data: dict[str, Any]) -> dict[str, Any]:
     for rep in registry_data["representations"]:
         for adj in rep.get("adjacent_routes", []):
             if adj not in representations_by_id:
-                raise ValueError(f"Unknown adjacent route '{adj}' in representation '{rep['id']}'")
+                raise ValueError(
+                    f"Unknown adjacent route '{adj}' in representation '{rep['id']}'"
+                )
 
         asset_type_aliases: dict[str, str] = {}
         for asset_type in rep.get("asset_types", []):
             at_id = asset_type["id"]
             for at_name in [at_id, *asset_type.get("aliases", [])]:
                 at_token = route_token(at_name)
-                if at_token in asset_type_aliases and asset_type_aliases[at_token] != at_id:
-                    raise ValueError(f"Duplicate asset type alias '{at_name}' in representation '{rep['id']}'")
+                if (
+                    at_token in asset_type_aliases
+                    and asset_type_aliases[at_token] != at_id
+                ):
+                    raise ValueError(
+                        f"Duplicate asset type alias '{at_name}' in representation '{rep['id']}'"
+                    )
                 asset_type_aliases[at_token] = at_id
 
     return {
@@ -96,7 +105,9 @@ def validate_case(
         if not c.get("text"):
             errors.append(f"[{case_id}] constraint[{idx}] missing text")
         if c.get("hardness") not in ("hard", "soft"):
-            errors.append(f"[{case_id}] constraint[{idx}] invalid hardness: {c.get('hardness')}")
+            errors.append(
+                f"[{case_id}] constraint[{idx}] invalid hardness: {c.get('hardness')}"
+            )
 
     # Representations check
     reps = req.get("representations", [])
@@ -121,13 +132,18 @@ def validate_case(
                 for at in rep_def.get("asset_types", [])
                 for alias in at.get("aliases", [])
             }
-            if asset_type not in valid_asset_ids and asset_type not in valid_asset_aliases:
+            if (
+                asset_type not in valid_asset_ids
+                and asset_type not in valid_asset_aliases
+            ):
                 errors.append(
                     f"[{case_id}] Invalid asset type '{asset_type}' for route '{resolved_route}'"
                 )
 
     if primary_count != 1:
-        errors.append(f"[{case_id}] Exactly one primary representation required, got {primary_count}")
+        errors.append(
+            f"[{case_id}] Exactly one primary representation required, got {primary_count}"
+        )
 
     # Review handoff check
     review = req.get("review_handoff", {})
@@ -141,14 +157,20 @@ def validate_case(
     for idx, d in enumerate(deliverables):
         stamp = d.get("advisory_stamp", "")
         if not stamp.startswith(MANDATORY_ADVISORY_PREFIX):
-            errors.append(f"[{case_id}] deliverable[{idx}] missing mandatory advisory stamp")
+            errors.append(
+                f"[{case_id}] deliverable[{idx}] missing mandatory advisory stamp"
+            )
 
         finra_leg = d.get("finra_2214_legend", "")
         if FINRA_2214_KEYWORD not in finra_leg:
-            errors.append(f"[{case_id}] deliverable[{idx}] missing FINRA 2214 hypothetical legend")
+            errors.append(
+                f"[{case_id}] deliverable[{idx}] missing FINRA 2214 hypothetical legend"
+            )
 
         if not d.get("decimal_precision_verified"):
-            errors.append(f"[{case_id}] deliverable[{idx}] decimal precision must be verified")
+            errors.append(
+                f"[{case_id}] deliverable[{idx}] decimal precision must be verified"
+            )
 
         # Mathematical verification if weights present
         weights = d.get("weights")
@@ -156,7 +178,9 @@ def validate_case(
             try:
                 weight_sum = sum(Decimal(str(w)) for w in weights.values())
                 if abs(weight_sum - Decimal("1.0")) > Decimal("0.0001"):
-                    errors.append(f"[{case_id}] Portfolio weights do not sum to 1.0 (got {weight_sum})")
+                    errors.append(
+                        f"[{case_id}] Portfolio weights do not sum to 1.0 (got {weight_sum})"
+                    )
             except (InvalidOperation, ValueError) as exc:
                 errors.append(f"[{case_id}] Non-decimal or invalid weight value: {exc}")
 
@@ -164,7 +188,9 @@ def validate_case(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate financial-advisement-router case manifests and registry")
+    parser = argparse.ArgumentParser(
+        description="Validate financial-advisement-router case manifests and registry"
+    )
     parser.add_argument(
         "--manifest",
         type=Path,
@@ -177,7 +203,9 @@ def main() -> int:
     try:
         registry_data = load_json(REGISTRY_PATH)
         validated = validate_registry(registry_data)
-        print(f"    Loaded {len(validated['representations_by_id'])} representations successfully.")
+        print(
+            f"    Loaded {len(validated['representations_by_id'])} representations successfully."
+        )
     except Exception as exc:
         print(f"[!] Registry validation error: {exc}", file=sys.stderr)
         return 1
@@ -205,16 +233,22 @@ def main() -> int:
 
     total_errors: list[str] = []
     for c in cases:
-        case_errors = validate_case(c, validated["representations_by_id"], validated["medium_aliases"])
+        case_errors = validate_case(
+            c, validated["representations_by_id"], validated["medium_aliases"]
+        )
         total_errors.extend(case_errors)
 
     if total_errors:
-        print(f"[!] Validation failed with {len(total_errors)} errors:", file=sys.stderr)
+        print(
+            f"[!] Validation failed with {len(total_errors)} errors:", file=sys.stderr
+        )
         for err in total_errors:
             print(f"    - {err}", file=sys.stderr)
         return 1
 
-    print(f"[+] All {len(cases)} cases passed financial domain validation successfully.")
+    print(
+        f"[+] All {len(cases)} cases passed financial domain validation successfully."
+    )
     return 0
 
 

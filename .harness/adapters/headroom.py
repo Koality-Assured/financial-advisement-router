@@ -62,7 +62,9 @@ class HeadroomAdapter:
 
         self.port = port if port is not None else self.config.port
         self.base_url = (base_url or self.config.base_url).rstrip("/")
-        self.timeout_sec = timeout_sec if timeout_sec is not None else float(self.config.timeout_sec)
+        self.timeout_sec = (
+            timeout_sec if timeout_sec is not None else float(self.config.timeout_sec)
+        )
         self.enabled = enabled and self.config.enabled
 
     @staticmethod
@@ -70,7 +72,7 @@ class HeadroomAdapter:
         """Estimate tokens using chars/4 standard heuristic."""
         if not text:
             return 0
-        return max(1, int(round(len(text) / CHARS_PER_TOKEN)))
+        return max(1, round(len(text) / CHARS_PER_TOKEN))
 
     def is_healthy(self) -> bool:
         """Check if Headroom compression HTTP server is running and healthy."""
@@ -81,7 +83,9 @@ class HeadroomAdapter:
         for url in endpoints:
             try:
                 req = urllib.request.Request(url, method="GET")
-                with urllib.request.urlopen(req, timeout=min(2.0, self.timeout_sec)) as resp:
+                with urllib.request.urlopen(
+                    req, timeout=min(2.0, self.timeout_sec)
+                ) as resp:
                     if resp.status in {200, 204}:
                         return True
             except (urllib.error.URLError, TimeoutError, OSError):
@@ -138,10 +142,23 @@ class HeadroomAdapter:
                     data = json.loads(resp.read().decode("utf-8"))
                     compressed_msgs = data.get("messages", messages)
                     tok_before = int(data.get("tokens_before", est_before))
-                    tok_after = int(data.get("tokens_after", self.est_tokens(json.dumps(compressed_msgs))))
-                    tok_saved = int(data.get("tokens_saved", max(0, tok_before - tok_after)))
-                    ratio = float(data.get("compression_ratio", round(tok_saved / max(1, tok_before), 4)))
-                    transforms = list(data.get("transforms_applied", ["proxy_compress"]))
+                    tok_after = int(
+                        data.get(
+                            "tokens_after", self.est_tokens(json.dumps(compressed_msgs))
+                        )
+                    )
+                    tok_saved = int(
+                        data.get("tokens_saved", max(0, tok_before - tok_after))
+                    )
+                    ratio = float(
+                        data.get(
+                            "compression_ratio",
+                            round(tok_saved / max(1, tok_before), 4),
+                        )
+                    )
+                    transforms = list(
+                        data.get("transforms_applied", ["proxy_compress"])
+                    )
 
                     return HeadroomCompressResult(
                         messages=compressed_msgs,

@@ -6,10 +6,11 @@ rank: high
 topics: [agents, naming]
 rag_keywords:
   [
-    Financial Advisement Router,
-    Quant Harness,
-    Capital Engine,
-    Portfolio Risk Harness,
+    Prospector,
+    The Harness,
+    Security Harness,
+    AI Router,
+    The Router,
     project-name,
   ]
 ---
@@ -18,12 +19,13 @@ rag_keywords:
 
 ## Project-as-a-whole names
 
-Project-as-a-whole names all mean this repository. Pick any of them when you mean this repo; they name the same project, not multiple products.
+Project-as-a-whole names all mean this repository. Pick any of them when you mean this repo; they name the same project, not five products.
 
-- Financial Advisement Router
-- Quant Harness
-- Capital Engine
-- Portfolio Risk Harness
+- Prospector
+- The Harness
+- Security Harness
+- AI Router
+- The Router
 
 ## What is not a project name
 
@@ -31,5 +33,5 @@ These labels are a folder, an activity, an agent, or the git slug. They are not 
 
 - `routing/` — the generated next-step index folder after root AGENTS.md
 - "routing" — the activity of matching skill-dispatch / area-map
-- `router` — the coordinator agent under `ai-tooling/agents/router/`
-- `financial-advisement-router` — the git/repo slug only; not a spoken project name
+- `router` — the specialist agent under `ai-tooling/agents/router/`
+- `ai-router` — the git/repo slug only; not a spoken project name

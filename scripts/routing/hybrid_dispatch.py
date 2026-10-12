@@ -22,22 +22,137 @@ from typing import Any
 
 _LIB = Path(__file__).resolve().parents[1] / "_lib"
 sys.path.insert(0, str(_LIB))
-from areas import load_area_records, load_nested_defaults  # noqa: E402
-from md import heading_titles, load_skill_record, parse_frontmatter, skill_paths  # noqa: E402
-from paths import REPO_ROOT as DEFAULT_ROOT  # noqa: E402
+from areas import load_area_records
+from md import load_skill_record, skill_paths
+from paths import REPO_ROOT as DEFAULT_ROOT
 
 STOP_WORDS = {
-    "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are",
-    "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", "but",
-    "by", "can", "cannot", "could", "did", "do", "does", "doing", "down", "during", "each", "few",
-    "for", "from", "further", "had", "has", "have", "having", "he", "her", "here", "hers", "herself",
-    "him", "himself", "his", "how", "i", "if", "in", "into", "is", "it", "its", "itself", "let",
-    "me", "more", "most", "my", "myself", "no", "nor", "not", "of", "off", "on", "once", "only",
-    "or", "other", "ought", "our", "ours", "ourselves", "out", "over", "own", "same", "she",
-    "should", "so", "some", "such", "than", "that", "the", "their", "theirs", "them", "themselves",
-    "then", "there", "these", "they", "this", "those", "through", "to", "too", "under", "until",
-    "up", "very", "was", "we", "were", "what", "when", "where", "which", "while", "who", "whom",
-    "why", "with", "would", "you", "your", "yours", "yourself", "yourselves",
+    "a",
+    "about",
+    "above",
+    "after",
+    "again",
+    "against",
+    "all",
+    "am",
+    "an",
+    "and",
+    "any",
+    "are",
+    "as",
+    "at",
+    "be",
+    "because",
+    "been",
+    "before",
+    "being",
+    "below",
+    "between",
+    "both",
+    "but",
+    "by",
+    "can",
+    "cannot",
+    "could",
+    "did",
+    "do",
+    "does",
+    "doing",
+    "down",
+    "during",
+    "each",
+    "few",
+    "for",
+    "from",
+    "further",
+    "had",
+    "has",
+    "have",
+    "having",
+    "he",
+    "her",
+    "here",
+    "hers",
+    "herself",
+    "him",
+    "himself",
+    "his",
+    "how",
+    "i",
+    "if",
+    "in",
+    "into",
+    "is",
+    "it",
+    "its",
+    "itself",
+    "let",
+    "me",
+    "more",
+    "most",
+    "my",
+    "myself",
+    "no",
+    "nor",
+    "not",
+    "of",
+    "off",
+    "on",
+    "once",
+    "only",
+    "or",
+    "other",
+    "ought",
+    "our",
+    "ours",
+    "ourselves",
+    "out",
+    "over",
+    "own",
+    "same",
+    "she",
+    "should",
+    "so",
+    "some",
+    "such",
+    "than",
+    "that",
+    "the",
+    "their",
+    "theirs",
+    "them",
+    "themselves",
+    "then",
+    "there",
+    "these",
+    "they",
+    "this",
+    "those",
+    "through",
+    "to",
+    "too",
+    "under",
+    "until",
+    "up",
+    "very",
+    "was",
+    "we",
+    "were",
+    "what",
+    "when",
+    "where",
+    "which",
+    "while",
+    "who",
+    "whom",
+    "why",
+    "with",
+    "would",
+    "you",
+    "your",
+    "yours",
+    "yourself",
+    "yourselves",
 }
 
 
@@ -144,14 +259,13 @@ FAST_PATH_RULES: list[dict[str, Any]] = [
         "skill": "isolate-work",
         "owner_agent": "router",
         "patterns": [
-            r"\b(?:spawn|create|claim)\s+(?:git\s+)?worktree\b",
+            r"\b(?:spawn|create)\s+(?:git\s+)?worktree\b",
             r"\bgit\s+worktree\b",
             r"\bisolate-work\b",
             r"\bisolate\s+work\b",
             r"\bisolate\s+this\s+mutating\s+work\b",
             r"\bisolat(?:e|ing)\s+the\s+worktree\b",
             r"\bworktree\s+isolation\b",
-            r"\bbranch\s+claim\b",
         ],
     },
     {
@@ -248,6 +362,30 @@ FAST_PATH_RULES: list[dict[str, Any]] = [
         ],
     },
     # Security & Assessment
+    {
+        "skill": "noir-scan",
+        "owner_agent": "artifact-agent",
+        "patterns": [
+            r"\b(?:run\s+)?noir\s+scan\b",
+            r"\bnoir-scan\b",
+            r"\bowasp\s+noir\b",
+            r"\bshadow\s+api\s+scan\b",
+            r"\brun_noir_scan\.py\b",
+            r"\bsecurity\s+scans?\b",
+            r"\bnoir\b",
+        ],
+    },
+    {
+        "skill": "threat-model",
+        "owner_agent": "assessment-agent",
+        "patterns": [
+            r"\bstride\s+threat\s+model\b",
+            r"\bthreat\s+model(?:ing)?\b",
+            r"\bthreat-model\b",
+            r"\bbuild_threat_model\.py\b",
+            r"\bstride\b",
+        ],
+    },
     {
         "skill": "code-review-report",
         "owner_agent": "artifact-agent",
@@ -361,6 +499,16 @@ FAST_PATH_RULES: list[dict[str, Any]] = [
             r"\bvalidate\s+skill\b",
         ],
     },
+    {
+        "skill": "as-code-builder",
+        "owner_agent": "as-code-agent",
+        "patterns": [
+            r"\bas-code-builder\b",
+            r"\bdraft\s+(?:terraform|pulumi|ansible|kyverno|rego)\b",
+            r"\biac\s+artifact\b",
+            r"\bpolicy-as-code\b",
+        ],
+    },
     # Research & Deliverables
     {
         "skill": "deep-research",
@@ -388,6 +536,24 @@ FAST_PATH_RULES: list[dict[str, Any]] = [
             r"\bproposal\s+report\b",
         ],
     },
+    {
+        "skill": "tabler-dashboard",
+        "owner_agent": "artifact-agent",
+        "patterns": [
+            r"\btabler-dashboard\b",
+            r"\btabler\s+dashboard\b",
+            r"\bhtml\s+dashboard\b",
+        ],
+    },
+    {
+        "skill": "foundation-site",
+        "owner_agent": "artifact-agent",
+        "patterns": [
+            r"\bfoundation-site\b",
+            r"\bfoundation\s+sites?\s+html\b",
+            r"\bbuild_foundation_site\.py\b",
+        ],
+    },
     # Memory
     {
         "skill": "memory-create",
@@ -413,130 +579,62 @@ FAST_PATH_RULES: list[dict[str, Any]] = [
             r"\barchive\s+memory\s+checkpoint\b",
         ],
     },
-    # Financial Valuation & Modeling
+    # Cloud operators
     {
-        "skill": "dcf-valuation-model",
-        "owner_agent": "financial-modeling-analyst",
+        "skill": "aws-logs",
+        "owner_agent": "cloud-operator",
+        "patterns": [r"\baws\s+logs\b", r"\baws-logs\b"],
+    },
+    {
+        "skill": "aws-read",
+        "owner_agent": "cloud-operator",
+        "patterns": [r"\baws\s+read\b", r"\baws-read\b", r"\binspect\s+aws\b"],
+    },
+    {
+        "skill": "aws-write",
+        "owner_agent": "cloud-operator",
         "patterns": [
-            r"\bdcf\s+(?:valuation|model|calculator)\b",
-            r"\bdcf-valuation-model\b",
-            r"\bdiscounted\s+cash\s+flow\b",
-            r"\bcapm\s+wacc\b",
-            r"\bgordon\s+growth\b",
-            r"\bunlevered\s+fcf\b",
+            r"\baws\s+write\b",
+            r"\baws-write\b",
+            r"\bauthorize\s+aws\s+write\b",
         ],
     },
     {
-        "skill": "comps-financial-benchmark",
-        "owner_agent": "financial-modeling-analyst",
+        "skill": "azure-logs",
+        "owner_agent": "cloud-operator",
+        "patterns": [r"\bazure\s+logs\b", r"\bazure-logs\b"],
+    },
+    {
+        "skill": "azure-read",
+        "owner_agent": "cloud-operator",
+        "patterns": [r"\bazure\s+read\b", r"\bazure-read\b", r"\binspect\s+azure\b"],
+    },
+    {
+        "skill": "azure-write",
+        "owner_agent": "cloud-operator",
         "patterns": [
-            r"\bcomps\s+(?:financial\s+benchmark|calculator|valuation|multiples)\b",
-            r"\bcomps-financial-benchmark\b",
-            r"\bcomparable\s+company\s+analysis\b",
-            r"\bpeer\s+multiples?\b",
-            r"\bev/ebitda\b",
-            r"\bprice_to_book\b",
+            r"\bazure\s+write\b",
+            r"\bazure-write\b",
+            r"\bauthorize\s+azure\s+write\b",
         ],
     },
     {
-        "skill": "lbo-debt-schedule",
-        "owner_agent": "financial-modeling-analyst",
-        "patterns": [
-            r"\blbo\s+(?:debt\s+schedule|model|waterfall)\b",
-            r"\blbo-debt-schedule\b",
-            r"\bleveraged\s+buyout\b",
-            r"\bdebt\s+amorti[zs]ation\s+schedule\b",
-            r"\bdebt\s+waterfall\b",
-            r"\bsponsor\s+irr\b",
-        ],
-    },
-    # Portfolio Strategy & Asset Allocation
-    {
-        "skill": "portfolio-optimization",
-        "owner_agent": "portfolio-strategy-operator",
-        "patterns": [
-            r"\bportfolio\s+optimi[zs]ation\b",
-            r"\bportfolio-optimization\b",
-            r"\bmean[- ]variance\s+weights?\b",
-            r"\befficient\s+frontier\b",
-            r"\bmax\s+sharpe\b",
-            r"\bmin\s+variance\b",
-            r"\bsortino\s+grid\b",
-        ],
+        "skill": "gcp-logs",
+        "owner_agent": "cloud-operator",
+        "patterns": [r"\bgcp\s+logs\b", r"\bgcp-logs\b"],
     },
     {
-        "skill": "rebalancing-drift-ledger",
-        "owner_agent": "portfolio-strategy-operator",
-        "patterns": [
-            r"\brebalancing\s+drift\s+ledger\b",
-            r"\brebalancing-drift-ledger\b",
-            r"\bportfolio\s+rebalancing\b",
-            r"\ballocation\s+drift\b",
-            r"\btolerance\s+bands?\b",
-            r"\brebalance\s+orders?\b",
-        ],
+        "skill": "gcp-read",
+        "owner_agent": "cloud-operator",
+        "patterns": [r"\bgcp\s+read\b", r"\bgcp-read\b", r"\binspect\s+gcp\b"],
     },
     {
-        "skill": "tax-loss-harvesting",
-        "owner_agent": "portfolio-strategy-operator",
+        "skill": "gcp-write",
+        "owner_agent": "cloud-operator",
         "patterns": [
-            r"\btax[- ]loss\s+harvesting\b",
-            r"\btax-loss-harvesting\b",
-            r"\bwash\s+sale(?:\s+detector)?\b",
-            r"\birc\s+(?:section\s+)?1091\b",
-            r"\bharvest\s+capital\s+losses?\b",
-            r"\breplacement\s+etf(?:s|\s+registry)?\b",
-        ],
-    },
-    # Risk & Macro Stress Testing
-    {
-        "skill": "risk-stress-simulation",
-        "owner_agent": "risk-stress-tester",
-        "patterns": [
-            r"\brisk\s+stress\s+simulation\b",
-            r"\brisk-stress-simulation\b",
-            r"\bmonte\s+carlo\s+var\b",
-            r"\b(?:parametric|historical)\s+var\b",
-            r"\bvalue\s+at\s+risk\b",
-            r"\bcvar\b",
-            r"\bexpected\s+shortfall\b",
-        ],
-    },
-    {
-        "skill": "macro-scenario-shocker",
-        "owner_agent": "risk-stress-tester",
-        "patterns": [
-            r"\bmacro\s+scenario\s+shocker\b",
-            r"\bmacro-scenario-shocker\b",
-            r"\bmacro(?:economic)?\s+shocks?\b",
-            r"\byield\s+curve\s+inversion\b",
-            r"\bstagflation\s+scenario\b",
-            r"\bcredit\s+spread\s+widening\b",
-        ],
-    },
-    # SEC & Compliance
-    {
-        "skill": "sec-edgar-extract",
-        "owner_agent": "sec-compliance-curator",
-        "patterns": [
-            r"\bsec\s+edgar\s+extract\b",
-            r"\bsec-edgar-extract\b",
-            r"\bedgar\s+(?:companyfacts|ingest|parse)\b",
-            r"\bcompanyfacts\s+json\b",
-            r"\bgaap\s+facts\b",
-            r"\bsec\s+edgar\b",
-        ],
-    },
-    {
-        "skill": "form-adv-compliance",
-        "owner_agent": "sec-compliance-curator",
-        "patterns": [
-            r"\bform\s+adv\s+compliance\b",
-            r"\bform-adv-compliance\b",
-            r"\bform\s+adv\s+(?:part\s+1|part\s+2a|brochure|audit)\b",
-            r"\bregulatory\s+aum\b",
-            r"\braum\b",
-            r"\binvestment\s+advisers?\s+act\b",
+            r"\bgcp\s+write\b",
+            r"\bgcp-write\b",
+            r"\bauthorize\s+gcp\s+write\b",
         ],
     },
 ]
@@ -544,7 +642,7 @@ FAST_PATH_RULES: list[dict[str, Any]] = [
 
 class Tier1FastPath:
     """Tier 1 Fast-Path Regex & Keyword Dispatcher.
-    
+
     Sub-millisecond matcher with strict MED-02 multi-intent collision handling.
     """
 
@@ -611,6 +709,7 @@ class Tier1FastPath:
 # Tier 2: In-Memory BM25 Lexical / Semantic Index
 # ----------------------------------------------------------------------
 
+
 @dataclass
 class IndexedDocument:
     doc_id: str
@@ -627,7 +726,9 @@ class IndexedDocument:
 class Tier2BM25:
     """In-memory BM25 index over routing metadata (~5ms, 0 tokens)."""
 
-    def __init__(self, root: Path | None = None, k1: float = 1.5, b: float = 0.75) -> None:
+    def __init__(
+        self, root: Path | None = None, k1: float = 1.5, b: float = 0.75
+    ) -> None:
         self.root = root or DEFAULT_ROOT
         self.k1 = k1
         self.b = b
@@ -648,7 +749,9 @@ class Tier2BM25:
             desc_tokens = tokenize(rec["description"])
             body_tokens = tokenize(rec["body"][:500])  # preview body
 
-            all_tokens = name_tokens + hints_tokens + topics_tokens + desc_tokens + body_tokens
+            all_tokens = (
+                name_tokens + hints_tokens + topics_tokens + desc_tokens + body_tokens
+            )
             doc = IndexedDocument(
                 doc_id=f"skill:{rec['name']}",
                 doc_type="skill",
@@ -676,7 +779,9 @@ class Tier2BM25:
                     name=area_id,
                     owner_agent=owner,
                     rank="medium",
-                    isolation="mutate" if "mutate" in area.get("load", "") else "read-only",
+                    isolation="mutate"
+                    if "mutate" in area.get("load", "")
+                    else "read-only",
                     description=purpose,
                     tokens=tokens,
                     length=len(tokens),
@@ -722,7 +827,9 @@ class Tier2BM25:
                 if q_term in tf_map:
                     tf = tf_map[q_term]
                     idf = self.idf.get(q_term, 0.1)
-                    denom = tf + self.k1 * (1.0 - self.b + self.b * (doc.length / (self.avgdl or 1.0)))
+                    denom = tf + self.k1 * (
+                        1.0 - self.b + self.b * (doc.length / (self.avgdl or 1.0))
+                    )
                     term_score = idf * ((tf * (self.k1 + 1.0)) / denom)
                     doc_score += term_score
                     if q_term not in matched_terms:
@@ -787,6 +894,7 @@ class Tier2BM25:
 # Tier 3: Structured LLM Ambiguity Gate
 # ----------------------------------------------------------------------
 
+
 class Tier3AmbiguityGate:
     """Constructs structured candidate triage payloads and disambiguation questions."""
 
@@ -811,8 +919,8 @@ class Tier3AmbiguityGate:
                     {
                         "name": s,
                         "type": "skill",
-                        "owner_agent": "-",
-                        "rank": "-",
+                        "owner_agent": "—",
+                        "rank": "—",
                         "isolation": "mutate",
                         "score": 1.0,
                         "confidence": 0.5,
@@ -835,7 +943,11 @@ class Tier3AmbiguityGate:
                 f"Did you intend to execute `{name}` ({short_desc}) based on '{matched}'?"
             )
 
-        status = "multi_intent" if (conflicting_skills or len(cand_list) > 1) else "ambiguous"
+        status = (
+            "multi_intent"
+            if (conflicting_skills or len(cand_list) > 1)
+            else "ambiguous"
+        )
         reason = (
             f"Query matched {len(cand_list)} competing candidate targets across different skill/area domains."
             if len(cand_list) > 1
@@ -876,7 +988,9 @@ class Tier3AmbiguityGate:
             reason=reason,
             candidates=cand_list,
             disambiguation_questions=questions,
-            recommended_action="clarify_with_user" if len(cand_list) > 1 else "select_top_candidate",
+            recommended_action="clarify_with_user"
+            if len(cand_list) > 1
+            else "select_top_candidate",
             llm_triage_prompt="\n".join(prompt_lines),
             elapsed_ms=elapsed,
         )
@@ -885,6 +999,7 @@ class Tier3AmbiguityGate:
 # ----------------------------------------------------------------------
 # Unified Hybrid Dispatcher Pipeline
 # ----------------------------------------------------------------------
+
 
 class HybridDispatcher:
     """3-Tier Hybrid Dispatch Pipeline Coordinator."""
@@ -895,7 +1010,9 @@ class HybridDispatcher:
         self.tier2 = Tier2BM25(root=self.root)
         self.tier3 = Tier3AmbiguityGate()
 
-    def dispatch(self, query: str, tier: str = "all", top_k: int = 5) -> HybridDispatchResult:
+    def dispatch(
+        self, query: str, tier: str = "all", top_k: int = 5
+    ) -> HybridDispatchResult:
         t0 = time.perf_counter()
 
         t1_res: Tier1Result | None = None
@@ -919,13 +1036,19 @@ class HybridDispatcher:
 
         if tier in {"2", "all"}:
             t2_res = self.tier2.search(query, top_k=top_k)
-            if tier == "2" or (t2_res.matched and not t2_res.is_ambiguous and tier == "all"):
+            if tier == "2" or (
+                t2_res.matched and not t2_res.is_ambiguous and tier == "all"
+            ):
                 total_elapsed = (time.perf_counter() - t0) * 1000.0
                 return HybridDispatchResult(
                     query=query,
                     selected_tier=2,
-                    final_target=t2_res.skill or (t2_res.candidates[0].name if t2_res.candidates else None),
-                    owner_agent=t2_res.owner_agent or (t2_res.candidates[0].owner_agent if t2_res.candidates else None),
+                    final_target=t2_res.skill
+                    or (t2_res.candidates[0].name if t2_res.candidates else None),
+                    owner_agent=t2_res.owner_agent
+                    or (
+                        t2_res.candidates[0].owner_agent if t2_res.candidates else None
+                    ),
                     confidence=t2_res.confidence,
                     status="dispatched" if t2_res.matched else "ambiguous",
                     tier1=t1_res,
@@ -938,7 +1061,11 @@ class HybridDispatcher:
             if t2_res is None:
                 t2_res = self.tier2.search(query, top_k=top_k)
 
-            conflicts = t1_res.conflicting_skills if t1_res and t1_res.conflicting_skills else None
+            conflicts = (
+                t1_res.conflicting_skills
+                if t1_res and t1_res.conflicting_skills
+                else None
+            )
             t3_res = self.tier3.evaluate(
                 query=query,
                 candidates=t2_res.candidates if t2_res else [],
@@ -972,7 +1099,9 @@ class HybridDispatcher:
         )
 
 
-def dispatch_query(query: str, tier: str = "all", top_k: int = 5, root: Path | None = None) -> dict[str, Any]:
+def dispatch_query(
+    query: str, tier: str = "all", top_k: int = 5, root: Path | None = None
+) -> dict[str, Any]:
     """Convenience functional interface for hybrid dispatch."""
     dispatcher = HybridDispatcher(root=root)
     result = dispatcher.dispatch(query, tier=tier, top_k=top_k)
@@ -991,8 +1120,16 @@ def main(argv: list[str] | None = None) -> int:
         default="all",
         help="Tier to execute (1=Fast-Path, 2=BM25, 3=Ambiguity Gate, all=Cascade pipeline)",
     )
-    parser.add_argument("--json", action="store_true", help="Output machine-readable JSON")
-    parser.add_argument("--top-k", "-k", type=int, default=5, help="Number of top candidate matches to return")
+    parser.add_argument(
+        "--json", action="store_true", help="Output machine-readable JSON"
+    )
+    parser.add_argument(
+        "--top-k",
+        "-k",
+        type=int,
+        default=5,
+        help="Number of top candidate matches to return",
+    )
     parser.add_argument("--repo-root", type=str, help="Repository root path override")
 
     args = parser.parse_args(argv)
@@ -1015,14 +1152,20 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Total Time:   {res.total_elapsed_ms:.2f} ms")
 
     if res.tier1 and res.tier1.matched:
-        print(f"\n[Tier 1 Fast-Path Match]: {res.tier1.skill} ({res.tier1.owner_agent}) in {res.tier1.elapsed_ms:.2f}ms")
+        print(
+            f"\n[Tier 1 Fast-Path Match]: {res.tier1.skill} ({res.tier1.owner_agent}) in {res.tier1.elapsed_ms:.2f}ms"
+        )
     elif res.tier1 and res.tier1.conflicting_skills:
-        print(f"\n[Tier 1 Conflict]: Multi-intent detected across {res.tier1.conflicting_skills}")
+        print(
+            f"\n[Tier 1 Conflict]: Multi-intent detected across {res.tier1.conflicting_skills}"
+        )
 
     if res.tier2 and res.tier2.candidates:
         print(f"\n[Tier 2 BM25 Top Matches ({res.tier2.elapsed_ms:.2f}ms)]:")
         for i, c in enumerate(res.tier2.candidates[:3], start=1):
-            print(f"  {i}. {c.name} ({c.type}, {c.owner_agent}) - score: {c.score:.2f}, conf: {c.confidence:.2f}")
+            print(
+                f"  {i}. {c.name} ({c.type}, {c.owner_agent}) - score: {c.score:.2f}, conf: {c.confidence:.2f}"
+            )
 
     if res.tier3 and res.tier3.disambiguation_questions:
         print(f"\n[Tier 3 Disambiguation Questions ({res.tier3.elapsed_ms:.2f}ms)]:")

@@ -9,7 +9,6 @@ routing_hints: [harness, schema, adapter, areas, skills, agents]
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -30,9 +29,11 @@ except ImportError:
 from cli.registry import get_registry
 
 
-def resolve_harness_root(harness_arg: str | None = None, fallback_cwd: Path | None = None) -> Path:
+def resolve_harness_root(
+    harness_arg: str | None = None, fallback_cwd: Path | None = None
+) -> Path:
     """Resolve the target repository root path for harness commands.
-    
+
     If harness_arg is provided, resolves from the registry by ID or path.
     Otherwise checks if an active harness is recorded in the registry.
     If no active harness is recorded, defaults to fallback_cwd or Path.cwd().
@@ -47,7 +48,9 @@ def resolve_harness_root(harness_arg: str | None = None, fallback_cwd: Path | No
         p = Path(harness_arg).resolve()
         if p.is_dir():
             return p
-        raise ValueError(f"Target harness '{harness_arg}' is not registered and does not exist as a directory.")
+        raise ValueError(
+            f"Target harness '{harness_arg}' is not registered and does not exist as a directory."
+        )
 
     active = reg.get_active_harness()
     if active:

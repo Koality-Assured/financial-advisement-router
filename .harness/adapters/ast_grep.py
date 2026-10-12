@@ -68,13 +68,19 @@ class AstGrepAdapter:
     ) -> None:
         if isinstance(config, HarnessConfig):
             self.config = config.adapters.ast_grep
-            self.repo_root = Path(repo_root).resolve() if repo_root else config.repo_root
+            self.repo_root = (
+                Path(repo_root).resolve() if repo_root else config.repo_root
+            )
         elif isinstance(config, AstGrepAdapterConfig):
             self.config = config
-            self.repo_root = Path(repo_root).resolve() if repo_root else Path.cwd().resolve()
+            self.repo_root = (
+                Path(repo_root).resolve() if repo_root else Path.cwd().resolve()
+            )
         else:
             self.config = AstGrepAdapterConfig()
-            self.repo_root = Path(repo_root).resolve() if repo_root else Path.cwd().resolve()
+            self.repo_root = (
+                Path(repo_root).resolve() if repo_root else Path.cwd().resolve()
+            )
 
         self._custom_binary = Path(binary) if binary else None
 
@@ -83,7 +89,9 @@ class AstGrepAdapter:
         if self._custom_binary:
             if self._custom_binary.is_file():
                 return self._custom_binary
-            raise AstGrepError(f"Specified ast-grep binary does not exist: {self._custom_binary}")
+            raise AstGrepError(
+                f"Specified ast-grep binary does not exist: {self._custom_binary}"
+            )
 
         override = os.environ.get("AST_GREP", "").strip()
         if override:
@@ -99,15 +107,19 @@ class AstGrepAdapter:
         exe_dir = Path(sys.executable).resolve().parent
         candidates: list[Path] = []
         if sys.platform == "win32":
-            candidates.extend([
-                exe_dir / "Scripts" / "ast-grep.exe",
-                exe_dir / "ast-grep.exe",
-            ])
+            candidates.extend(
+                [
+                    exe_dir / "Scripts" / "ast-grep.exe",
+                    exe_dir / "ast-grep.exe",
+                ]
+            )
         else:
-            candidates.extend([
-                exe_dir / "ast-grep",
-                exe_dir / "bin" / "ast-grep",
-            ])
+            candidates.extend(
+                [
+                    exe_dir / "ast-grep",
+                    exe_dir / "bin" / "ast-grep",
+                ]
+            )
 
         for cand in candidates:
             if cand.is_file():
@@ -154,7 +166,9 @@ class AstGrepAdapter:
                 timeout=to,
             )
         except subprocess.TimeoutExpired as exc:
-            raise AstGrepError(f"ast-grep timed out after {to}s: {' '.join(cmd[:6])}") from exc
+            raise AstGrepError(
+                f"ast-grep timed out after {to}s: {' '.join(cmd[:6])}"
+            ) from exc
         except OSError as exc:
             raise AstGrepError(f"Failed to run ast-grep '{exe}': {exc}") from exc
 
@@ -179,9 +193,15 @@ class AstGrepAdapter:
             return json.loads(payload)
         except json.JSONDecodeError as exc:
             if proc.returncode != 0:
-                detail = stderr[-800:] or stdout[-800:] or f"exit code {proc.returncode}"
-                raise AstGrepError(f"ast-grep failed ({proc.returncode}): {detail}") from exc
-            raise AstGrepError(f"ast-grep JSON parse failed: {exc}; head={stdout[:300]!r}") from exc
+                detail = (
+                    stderr[-800:] or stdout[-800:] or f"exit code {proc.returncode}"
+                )
+                raise AstGrepError(
+                    f"ast-grep failed ({proc.returncode}): {detail}"
+                ) from exc
+            raise AstGrepError(
+                f"ast-grep JSON parse failed: {exc}; head={stdout[:300]!r}"
+            ) from exc
 
     def find_pattern(
         self,
@@ -202,7 +222,13 @@ class AstGrepAdapter:
                 args.append(str(p))
 
         raw_output = self._run(args)
-        raw_list = raw_output if isinstance(raw_output, list) else [raw_output] if raw_output else []
+        raw_list = (
+            raw_output
+            if isinstance(raw_output, list)
+            else [raw_output]
+            if raw_output
+            else []
+        )
 
         matches: list[AstGrepMatch] = []
         for item in raw_list:
@@ -246,7 +272,13 @@ class AstGrepAdapter:
                 args.append(str(p))
 
         raw_output = self._run(args)
-        raw_list = raw_output if isinstance(raw_output, list) else [raw_output] if raw_output else []
+        raw_list = (
+            raw_output
+            if isinstance(raw_output, list)
+            else [raw_output]
+            if raw_output
+            else []
+        )
 
         matches: list[AstGrepMatch] = []
         for item in raw_list:
@@ -271,7 +303,9 @@ class AstGrepAdapter:
             )
         return matches
 
-    def outline(self, path: str | Path, language: str | None = None) -> list[AstGrepSymbol]:
+    def outline(
+        self, path: str | Path, language: str | None = None
+    ) -> list[AstGrepSymbol]:
         """Extract high-level outline symbols from a source file using native ast-grep outline."""
         target_path = Path(path)
         if not target_path.is_absolute():
@@ -315,7 +349,13 @@ class AstGrepAdapter:
                 ["outline", str(target_path), "-l", lang, "--json=compact"],
                 check=False,
             )
-            raw_list = raw_output if isinstance(raw_output, list) else [raw_output] if raw_output else []
+            raw_list = (
+                raw_output
+                if isinstance(raw_output, list)
+                else [raw_output]
+                if raw_output
+                else []
+            )
             for file_entry in raw_list:
                 if not isinstance(file_entry, dict):
                     continue
@@ -325,7 +365,9 @@ class AstGrepAdapter:
                     name = str(item.get("name") or "").strip()
                     if not name:
                         continue
-                    symbol_type = str(item.get("symbolType") or item.get("astKind") or "symbol")
+                    symbol_type = str(
+                        item.get("symbolType") or item.get("astKind") or "symbol"
+                    )
                     range_info = item.get("range", {})
                     start = range_info.get("start", {})
                     # Convert 0-indexed Tree-sitter line to 1-indexed editor line
@@ -373,7 +415,9 @@ class AstGrepAdapter:
 
         for pat, kind in patterns:
             try:
-                matches = self.find_pattern(pattern=pat, language=lang, paths=[target_path])
+                matches = self.find_pattern(
+                    pattern=pat, language=lang, paths=[target_path]
+                )
                 for m in matches:
                     name = m.meta_variables.get("NAME", {}).get("text", "")
                     if not name:

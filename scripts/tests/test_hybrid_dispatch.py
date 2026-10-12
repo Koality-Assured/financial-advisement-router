@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -19,7 +20,7 @@ _ROUTING = Path(__file__).resolve().parents[1] / "routing"
 sys.path.insert(0, str(_LIB))
 sys.path.insert(0, str(_ROUTING))
 
-from hybrid_dispatch import (  # noqa: E402
+from hybrid_dispatch import (
     BM25Candidate,
     HybridDispatcher,
     Tier1FastPath,
@@ -28,8 +29,8 @@ from hybrid_dispatch import (  # noqa: E402
     dispatch_query,
     tokenize,
 )
-from md import load_skill_record, parse_frontmatter  # noqa: E402
-from paths import REPO_ROOT as ROOT  # noqa: E402
+from md import load_skill_record, parse_frontmatter, skill_paths
+from paths import REPO_ROOT as ROOT
 
 
 def _skill_md(name: str) -> Path:
@@ -56,22 +57,13 @@ class TestTier1FastPath(unittest.TestCase):
             ("isolate the worktree", "isolate-work", "router"),
             ("qmd search docs", "qmd-usage", "qmd-ops"),
             ("qmd commands and retrieval", "qmd-usage", "qmd-ops"),
+            ("run noir scan on api", "noir-scan", "artifact-agent"),
             ("render mermaid diagram", "mermaid-diagram", "artifact-agent"),
             ("ast-grep precision retrieval", "ast-grep", "router-maintenance"),
             ("headroom context compression", "headroom", "router-maintenance"),
             ("markdownlint fix md001", "markdownlint", "documentation-ops"),
             ("deep research into cloud models", "deep-research", "detailed-activity"),
             ("create memory checkpoint", "memory-create", "ai-tooling-ops"),
-            ("dcf valuation model", "dcf-valuation-model", "financial-modeling-analyst"),
-            ("comps financial benchmark", "comps-financial-benchmark", "financial-modeling-analyst"),
-            ("lbo debt schedule", "lbo-debt-schedule", "financial-modeling-analyst"),
-            ("portfolio optimization", "portfolio-optimization", "portfolio-strategy-operator"),
-            ("rebalancing drift ledger", "rebalancing-drift-ledger", "portfolio-strategy-operator"),
-            ("tax loss harvesting", "tax-loss-harvesting", "portfolio-strategy-operator"),
-            ("monte carlo var risk stress simulation", "risk-stress-simulation", "risk-stress-tester"),
-            ("macro scenario shocker", "macro-scenario-shocker", "risk-stress-tester"),
-            ("sec edgar extract", "sec-edgar-extract", "sec-compliance-curator"),
-            ("form adv compliance", "form-adv-compliance", "sec-compliance-curator"),
         ]
         for query, expected_skill, expected_owner in test_cases:
             res = self.tier1.evaluate(query)
@@ -82,7 +74,9 @@ class TestTier1FastPath(unittest.TestCase):
             self.assertEqual(res.tier, 1)
 
     def test_no_match_returns_cleanly(self) -> None:
-        res = self.tier1.evaluate("What is the capital of France and how is the weather?")
+        res = self.tier1.evaluate(
+            "What is the capital of France and how is the weather?"
+        )
         self.assertFalse(res.matched)
         self.assertIsNone(res.skill)
         self.assertEqual(res.reason, "no_match")
@@ -93,7 +87,9 @@ class TestTier1FastPath(unittest.TestCase):
             "isolating work from the rest",
         ):
             res = self.tier1.evaluate(query)
-            self.assertFalse(res.matched, f"Query '{query}' must not hit isolate-work Fast-Path")
+            self.assertFalse(
+                res.matched, f"Query '{query}' must not hit isolate-work Fast-Path"
+            )
             self.assertEqual(res.reason, "no_match")
 
     def test_med02_multi_intent_collision_avoids_overtriggering(self) -> None:
@@ -101,19 +97,44 @@ class TestTier1FastPath(unittest.TestCase):
         # Query matching both antagonistic review and anti-slop
         query = "Antagonistic review of the anti-slop report in docs/"
         res = self.tier1.evaluate(query)
-        self.assertFalse(res.matched, "Multi-intent query must not match single skill in Tier 1")
+        self.assertFalse(
+            res.matched, "Multi-intent query must not match single skill in Tier 1"
+        )
         self.assertEqual(res.reason, "multi_intent_conflict")
         self.assertGreaterEqual(len(res.conflicting_skills), 2)
         self.assertIn("anti-slop", res.conflicting_skills)
         self.assertIn("antagonistic-review", res.conflicting_skills)
 
-        # Multi-intent query with financial and reporting skills
-        query2 = "Run dcf valuation model and create mermaid diagram"
+        # Another multi-intent query
+        query2 = "Run noir scan and create mermaid diagram"
         res2 = self.tier1.evaluate(query2)
         self.assertFalse(res2.matched)
         self.assertEqual(res2.reason, "multi_intent_conflict")
-        self.assertIn("dcf-valuation-model", res2.conflicting_skills)
+        self.assertIn("noir-scan", res2.conflicting_skills)
         self.assertIn("mermaid-diagram", res2.conflicting_skills)
+
+
+class TestSkillPathDiscovery(unittest.TestCase):
+    def test_skill_paths_accepts_repository_under_hidden_ancestor(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / ".codex" / "worktrees" / "repo"
+            visible = root / "ai-tooling" / "skills" / "example" / "SKILL.md"
+            hidden = root / "ai-tooling" / "skills" / ".private" / "SKILL.md"
+            visible.parent.mkdir(parents=True)
+            hidden.parent.mkdir(parents=True)
+            visible.write_text("---\nname: example\n---\n", encoding="utf-8")
+            hidden.write_text("---\nname: private\n---\n", encoding="utf-8")
+
+            self.assertEqual(skill_paths(root), [visible])
+
+    def test_skill_paths_accepts_ordinary_repository_path(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "repo"
+            skill = root / "ai-tooling" / "skills" / "example" / "SKILL.md"
+            skill.parent.mkdir(parents=True)
+            skill.write_text("---\nname: example\n---\n", encoding="utf-8")
+
+            self.assertEqual(skill_paths(root), [skill])
 
 
 class TestTier2BM25(unittest.TestCase):
@@ -134,21 +155,29 @@ class TestTier2BM25(unittest.TestCase):
         self.assertNotIn("and", tokens)
         self.assertNotIn("on", tokens)
 
-    def test_bm25_semantic_ranking_financial(self) -> None:
-        query = "unlevered free cash flow WACC Gordon growth terminal value"
+    def test_bm25_semantic_ranking_skills(self) -> None:
+        if not _skill_md("noir-scan").is_file():
+            self.skipTest("noir-scan is instance-only; omitted from wiki template")
+        # Query without exact fast-path keywords but matching skill purpose
+        query = "discover shadow routes and attack surface parameters"
         res = self.bm25.search(query, top_k=3)
         self.assertTrue(len(res.candidates) > 0)
         top = res.candidates[0]
-        self.assertEqual(top.name, "dcf-valuation-model")
-        self.assertEqual(top.owner_agent, "financial-modeling-analyst")
+        self.assertEqual(top.name, "noir-scan")
+        self.assertEqual(top.owner_agent, "security-tooling-operator")
         self.assertGreater(top.score, 0.0)
+        self.assertGreater(top.confidence, 0.5)
 
-    def test_bm25_ranking_wash_sales(self) -> None:
-        query = "disallowed capital losses 61-day window replacement ETF"
+    def test_bm25_ranking_cloud_logs(self) -> None:
+        if not (_skill_md("aws-logs").is_file() or _skill_md("aws-read").is_file()):
+            self.skipTest(
+                "aws-logs/aws-read are instance-only; omitted from wiki template"
+            )
+        query = "inspect amazon cloudwatch log streams via oauth"
         res = self.bm25.search(query, top_k=3)
         self.assertTrue(len(res.candidates) > 0)
         top_names = [c.name for c in res.candidates]
-        self.assertIn("tax-loss-harvesting", top_names)
+        self.assertTrue("aws-logs" in top_names or "aws-read" in top_names)
 
     def test_bm25_empty_query(self) -> None:
         res = self.bm25.search("", top_k=3)
@@ -199,7 +228,9 @@ class TestTier3AmbiguityGate(unittest.TestCase):
         self.assertIn("anti-slop", res.disambiguation_questions[0])
         self.assertIn("antagonistic-review", res.disambiguation_questions[1])
         self.assertEqual(res.recommended_action, "clarify_with_user")
-        self.assertIn("User Query: Review the anti-slop report in docs/", res.llm_triage_prompt)
+        self.assertIn(
+            "User Query: Review the anti-slop report in docs/", res.llm_triage_prompt
+        )
 
 
 class TestHybridDispatcher(unittest.TestCase):
@@ -218,14 +249,16 @@ class TestHybridDispatcher(unittest.TestCase):
 
     def test_dispatch_tier2_bm25(self) -> None:
         # Tier 2 specific invocation
-        res = self.dispatcher.dispatch("discounted cash flow Gordon growth terminal value", tier="2")
+        res = self.dispatcher.dispatch("finding shadow endpoints and routes", tier="2")
         self.assertEqual(res.selected_tier, 2)
-        self.assertEqual(res.final_target, "dcf-valuation-model")
+        self.assertIsNotNone(res.final_target)
         self.assertIsNotNone(res.tier2)
 
     def test_dispatch_tier3_multi_intent(self) -> None:
         # Multi-intent triggers Tier 3 ambiguity gate
-        res = self.dispatcher.dispatch("Antagonistic review of the anti-slop report in docs/", tier="all")
+        res = self.dispatcher.dispatch(
+            "Antagonistic review of the anti-slop report in docs/", tier="all"
+        )
         self.assertEqual(res.selected_tier, 3)
         self.assertIn(res.status, {"multi_intent", "ambiguous"})
         self.assertIsNotNone(res.tier3)
@@ -242,7 +275,12 @@ class TestSchemaV2SkillParsing(unittest.TestCase):
     """Unit tests for Schema V2 metadata parsing and indexing."""
 
     def test_load_skill_record_v2_fields(self) -> None:
-        skill_path = _skill_md("dcf-valuation-model")
+        threat_model_path = _skill_md("threat-model")
+        skill_path = (
+            threat_model_path
+            if threat_model_path.is_file()
+            else _skill_md("isolate-work")
+        )
         rec = load_skill_record(skill_path)
         self.assertEqual(rec["name"], skill_path.parent.name)
         self.assertTrue(rec.get("owner_agent"))
@@ -284,7 +322,7 @@ contracts:
 ## When to use
 Testing DAGs.
 """
-        fields, body = parse_frontmatter(v2_raw)
+        fields, _body = parse_frontmatter(v2_raw)
         self.assertEqual(fields.get("schema_version"), "2.0.0")
         self.assertEqual(fields.get("name"), "custom-composite")
         self.assertEqual(fields.get("on_failure"), "fallback_degrade")

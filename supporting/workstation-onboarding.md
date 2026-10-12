@@ -15,7 +15,7 @@ What this repo needs on a workstation, plus the gotchas that fail silently if sk
 
 ## Expected tools
 
-This repo expects a real CPython, Node for qmd, and the cost-layer CLIs. Optional tools matter only when you run those workflows.
+Use the `Need` column to distinguish repository-wide prerequisites (`required`) from tools needed only for specific workflows (`optional`).
 
 | Tool | Need | Min | Why | Notes |
 | --- | --- | --- | --- | --- |
@@ -24,9 +24,11 @@ This repo expects a real CPython, Node for qmd, and the cost-layer CLIs. Optiona
 | qmd | required | current `@tobilu/qmd` | Markdown search | [`qmd/query-pattern.md`](./qmd/query-pattern.md) |
 | Git | required | 2.40+ | Worktrees, branches | Vendor install |
 | ast-grep | required | 0.40+ | Structured-file lookup | [`ast-grep/precision-retrieval.md`](./ast-grep/precision-retrieval.md) |
-| uv | recommended | 0.4+ | Isolated Python tools (Headroom) | Vendor install |
-| Headroom | recommended | 0.35+ | Compress bulky dumps | Else `scripts/_lib/tool_output.py`. [`headroom/proxy-mcp.md`](./headroom/proxy-mcp.md) |
+| uv | required | 0.4+ | Install and manage isolated Python tools, including Headroom | Install from Astral; see the setup below |
+| Headroom | required | 0.35+ | Compress bulky tool outputs | Install `headroom-ai[proxy,mcp]`; [`headroom/proxy-mcp.md`](./headroom/proxy-mcp.md) |
 | GitHub CLI (`gh`) | if you use GitHub | current | Auth, PRs | [`github/gh-workflow-notes.md`](./github/gh-workflow-notes.md) |
+| Cloudflare CLI (`cf`) | optional (cloudflare) | current | Cloudflare API & DNS management | Install via `npm install -g cf`; auth via `cf auth login`. [`cloudflare/pages-wrangler.md`](./cloudflare/pages-wrangler.md) |
+| Cloudflare Wrangler (`wrangler`) | optional (cloudflare) | 4.0+ | Workers, Pages, & Storage deploy | Install via `npm install -g wrangler` or `npx wrangler`; auth via `wrangler login`. [`cloudflare/pages-wrangler.md`](./cloudflare/pages-wrangler.md) |
 | AWS CLI (`aws`) | optional (cloud-admin) | 2.15+ | AWS Organizations & SSO | [`../docs/guidance/cloud-aws-setup.md`](../docs/guidance/cloud-aws-setup.md) |
 | Google Cloud SDK (`gcloud`) | optional (cloud-admin) | current | GCP Resource Manager & ADC | [`../docs/guidance/cloud-gcp-setup.md`](../docs/guidance/cloud-gcp-setup.md) |
 | Azure CLI (`az`) | optional (cloud-admin) | 2.50+ | Azure Management Groups & Entra | [`../docs/guidance/cloud-azure-setup.md`](../docs/guidance/cloud-azure-setup.md) |
@@ -34,8 +36,55 @@ This repo expects a real CPython, Node for qmd, and the cost-layer CLIs. Optiona
 | Mermaid CLI (`mmdc`) | optional | 10+ | Offline diagram render | [`mermaid/agent-diagram-notes.md`](./mermaid/agent-diagram-notes.md) |
 | Docker / Noir | optional | — | Attack-surface inventory | Wrapper only. [`noir/agent-scan.md`](./noir/agent-scan.md) |
 | Web distillation (`trafilatura`, `readability-lxml`, `markdownify`, `httpx`) | required | current | Local HTML distillation & prompt injection defense | `pip install trafilatura readability-lxml markdownify httpx`. Used by `scripts/research/local_webfetch.py`. |
+| Local AI Runtime (`ollama` / `llama-server`) | optional (local-ai) | current | Zero-cost local model serving & frontier deferral | Optional; MUST be explicitly approved by human. See [Local AI section](#local-ai-runtime--model-serving-optional). |
 
-Use the vendor’s installer. `--version` is enough to confirm.
+Use each vendor’s installer for required tools. The commands below cover uv and Headroom.
+
+Excalidraw adds no required local CLI or package for diagram authoring in this repository. Use the official [hosted editor](https://excalidraw.com/) for canvas editing and export; the Excalidraw npm package is for application integration, not this repository's diagram workflow. Mermaid CLI (`mmdc`) remains an optional local dependency for offline Mermaid rendering. See [`diagramming/format-selection.md`](./diagramming/format-selection.md).
+
+## Install uv and Headroom
+
+Install uv from [Astral’s official instructions](https://docs.astral.sh/uv/getting-started/installation/), then use uv’s isolated tool environment for Headroom. On Windows, run the standalone installer in PowerShell; on macOS or Linux, use Astral’s shell installer:
+
+```powershell
+# Windows PowerShell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+```sh
+# macOS or Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Open a fresh terminal after installing uv. Install Headroom with the proxy and MCP extras required by this repo; do not use `[all]` because it installs unrelated ML dependencies:
+
+```powershell
+uv tool install --python 3.13 "headroom-ai[proxy,mcp]"
+uv tool update-shell  # if the Headroom executable directory is not on PATH
+```
+
+If Windows uv downloads CPython 3.13 but reports `Missing expected target directory for Python minor version link`, install from the downloaded interpreter’s versioned path:
+
+```powershell
+$uvExe = Join-Path $env:USERPROFILE '.local\bin\uv.exe'
+$pythonDir = & $uvExe python dir
+$python313Dir = Get-ChildItem -Path $pythonDir -Directory -Filter 'cpython-3.13.*-windows-x86_64-none' |
+    Sort-Object Name -Descending | Select-Object -First 1
+$python313 = Join-Path $python313Dir.FullName 'python.exe'
+& $uvExe tool install --python $python313 "headroom-ai[proxy,mcp]"
+```
+
+The Windows tools are normally installed under `%USERPROFILE%\.local\bin`. If the new command is not visible, confirm that directory is on `PATH` and open a fresh terminal. If selecting a system Python, use a real CPython 3.13 installation; do not select the Windows Store execution-alias stub.
+
+Verify the install without starting a proxy:
+
+```powershell
+uv --version
+headroom --version
+headroom --help
+```
+
+The proxy stays stopped until a workflow explicitly needs it. Headroom is still a required workstation tool even when a session must use the summarization fallback in [`scripts/_lib/tool_output.py`](../scripts/_lib/tool_output.py). See [Headroom’s install guide](https://headroom-docs.vercel.app/docs/installation) for vendor details.
 
 ## Agent host
 
@@ -63,6 +112,32 @@ These fail silently if omitted. The linked page has the recipe when one is neede
 ## Windows execution-control preflight
 
 On Windows, report SAC mode before treating a missing CLI as a PATH or install failure. If a binary was blocked, capture only the Code Integrity event ID and file path, then recover with a signed vendor build, a host-bundled runtime, or an enterprise App Control policy. Commands: [`powershell/windows-execution-control.md`](./powershell/windows-execution-control.md).
+
+## Local AI runtime & model serving (optional)
+
+Local model execution enables zero-cloud-cost inference, offline development resilience, and mechanical task deferral (linter fixes, unit test boilerplate, AST transforms) from frontier agents to local models.
+
+> [!IMPORTANT]
+> **Human Approval Gate**: Local AI tooling and model weights are **completely optional** and **MUST NOT** be automatically installed or downloaded without explicit human approval in that specific environment. Model weights consume multiple gigabytes of disk and system/GPU memory.
+
+### Onboarding & Hardware Capability Probe
+
+To safely probe host capabilities without modifying system state:
+```bash
+python scripts/cli/harness.py local onboarding --profile-only
+```
+This inspects the host's compute hardware (CPU architecture, RAM, GPU VRAM) and reports the mapped **Hardware Profile Tier** (Tier A through Tier E) with recommended model selections.
+
+### Human-Approved Activation
+
+To proceed with onboarding after human review:
+```bash
+python scripts/cli/harness.py local onboarding --approve
+```
+For advanced model catalog management, standalone benchmarking, custom Modelfiles, and layer splitting recipes, use the satellite toolkit repository:
+- Satellite Repository: [`Koality-Assured/local-ai-management`](https://github.com/Koality-Assured/local-ai-management)
+- Research Dossier: [`../research/local-models/`](../research/local-models/)
+- Project Spec: [`../projects/local-models/README.md`](../projects/local-models/README.md)
 
 ## Verify
 

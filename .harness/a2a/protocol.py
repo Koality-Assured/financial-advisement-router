@@ -49,12 +49,15 @@ def canonicalize_status(status: str) -> str:
     """Map skill-convention aliases onto canonical A2A statuses."""
     return STATUS_ALIASES.get(status, status)
 
+
 INJECTION_PATTERNS = [
     re.compile(r"(?i)\bignore\s+(?:all\s+)?(?:previous|prior)\s+instructions\b"),
     re.compile(r"(?i)\b(?:system\s*prompt|system\s*instructions)\s*override\b"),
     re.compile(r"(?i)<\s*system\s*>"),
     re.compile(r"(?i)<\s*/\s*system\s*>"),
-    re.compile(r"(?i)\b(?:you\s+must\s+now|disregard)\s+(?:all\s+)?(?:rules|constraints)\b"),
+    re.compile(
+        r"(?i)\b(?:you\s+must\s+now|disregard)\s+(?:all\s+)?(?:rules|constraints)\b"
+    ),
 ]
 
 SECRET_PATTERNS = [
@@ -104,7 +107,9 @@ class A2AResultEnvelope:
     error: str | None = None
     agent_id: str = ""
     timestamp_utc: str = field(
-        default_factory=lambda: dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        default_factory=lambda: dt.datetime.now(dt.UTC).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
     )
 
     def to_dict(self) -> dict[str, Any]:
@@ -145,11 +150,15 @@ class A2ABudgetTracker:
             )
         self.total_budget += additional_exchanges
         self.remaining_exchanges += additional_exchanges
-        self.extensions.append({
-            "added": additional_exchanges,
-            "authorization": authorization_note,
-            "timestamp_utc": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        })
+        self.extensions.append(
+            {
+                "added": additional_exchanges,
+                "authorization": authorization_note,
+                "timestamp_utc": dt.datetime.now(dt.UTC).strftime(
+                    "%Y-%m-%dT%H:%M:%SZ"
+                ),
+            }
+        )
 
 
 @dataclass
@@ -161,7 +170,9 @@ class A2AExchange:
     request: dict[str, Any] | str
     response: A2AResultEnvelope
     timestamp_utc: str = field(
-        default_factory=lambda: dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        default_factory=lambda: dt.datetime.now(dt.UTC).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
     )
 
 
@@ -203,16 +214,22 @@ class A2AProtocol:
     ) -> A2AResultEnvelope:
         """Validate raw dictionary as a conformant A2AResultEnvelope."""
         if not isinstance(data, dict):
-            raise A2AValidationError(f"Envelope must be a dictionary, got {type(data).__name__}")
+            raise A2AValidationError(
+                f"Envelope must be a dictionary, got {type(data).__name__}"
+            )
 
         # Check required fields
         task_id = str(data.get("task_id", "")).strip()
         if not task_id:
-            raise A2AValidationError("Result envelope missing required non-empty 'task_id'")
+            raise A2AValidationError(
+                "Result envelope missing required non-empty 'task_id'"
+            )
 
         status = str(data.get("status", "")).strip()
         if not status:
-            raise A2AValidationError("Result envelope missing required non-empty 'status'")
+            raise A2AValidationError(
+                "Result envelope missing required non-empty 'status'"
+            )
         if status not in VALID_STATUSES:
             raise A2AValidationError(
                 f"Invalid status '{status}'. Must be one of: {sorted(VALID_STATUSES)}"
@@ -221,21 +238,30 @@ class A2AProtocol:
 
         artifacts = data.get("artifacts")
         if artifacts is None or not isinstance(artifacts, list):
-            raise A2AValidationError("Result envelope missing required 'artifacts' list")
+            raise A2AValidationError(
+                "Result envelope missing required 'artifacts' list"
+            )
 
         handoff_requests = data.get("handoff_requests")
         if handoff_requests is None or not isinstance(handoff_requests, list):
-            raise A2AValidationError("Result envelope missing required 'handoff_requests' list")
+            raise A2AValidationError(
+                "Result envelope missing required 'handoff_requests' list"
+            )
 
         metrics = data.get("metrics")
         if metrics is None or not isinstance(metrics, dict):
-            raise A2AValidationError("Result envelope missing required 'metrics' dictionary")
+            raise A2AValidationError(
+                "Result envelope missing required 'metrics' dictionary"
+            )
 
         result_data = data.get("result_data")
         error = data.get("error")
         agent_id = str(data.get("agent_id", ""))
         timestamp_utc = str(
-            data.get("timestamp_utc", dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+            data.get(
+                "timestamp_utc",
+                dt.datetime.now(dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            )
         )
 
         # Validate security and content hygiene if enabled
@@ -303,7 +329,7 @@ class A2AProtocol:
 
         return A2AExchangeSession(
             protocol=self,
-            session_id=f"a2a-{task_id}-{dt.datetime.now(dt.timezone.utc).strftime('%H%M%S')}",
+            session_id=f"a2a-{task_id}-{dt.datetime.now(dt.UTC).strftime('%H%M%S')}",
             task_id=task_id,
             parent_agent=parent_agent,
             target_agent=target_agent,
@@ -346,7 +372,11 @@ class A2AExchangeSession:
 
         # Clean-state check on request: ensure parent chat transcripts are not carried over
         if self.clean_state and isinstance(request, dict):
-            if "chat_history" in request or "transcript" in request or "conversation_logs" in request:
+            if (
+                "chat_history" in request
+                or "transcript" in request
+                or "conversation_logs" in request
+            ):
                 raise A2ASecurityError(
                     "Clean-state rule violation: conversational transcripts / chat history must not be passed to child specialist."
                 )

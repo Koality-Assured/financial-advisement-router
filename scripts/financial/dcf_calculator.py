@@ -19,8 +19,7 @@ from typing import Any
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
 
-from _ledger import (  # noqa: E402
-    ADVISORY_STAMP,
+from _ledger import (
     FloatLedgerError,
     ledger_context,
     quantize_money,
@@ -42,14 +41,14 @@ def wacc(
     debt_weight: Decimal,
     tax_rate: Decimal,
 ) -> Decimal:
-    after_tax_kd = pre_tax_cost_of_debt * (Decimal("1") - tax_rate)
+    after_tax_kd = pre_tax_cost_of_debt * (Decimal(1) - tax_rate)
     return equity_weight * cost_of_equity + debt_weight * after_tax_kd
 
 
 def gordon_terminal(last_fcf: Decimal, growth: Decimal, discount: Decimal) -> Decimal:
     if growth >= discount:
         raise ValueError("terminal growth must be strictly below WACC")
-    return last_fcf * (Decimal("1") + growth) / (discount - growth)
+    return last_fcf * (Decimal(1) + growth) / (discount - growth)
 
 
 def dcf_enterprise_value(
@@ -59,13 +58,13 @@ def dcf_enterprise_value(
 ) -> tuple[Decimal, Decimal, list[Decimal]]:
     if not fcfs:
         raise ValueError("fcf list is empty")
-    one = Decimal("1")
+    one = Decimal(1)
     pv_fcfs: list[Decimal] = []
     for t, cash in enumerate(fcfs, start=1):
         pv_fcfs.append(cash / (one + discount) ** t)
     tv = gordon_terminal(fcfs[-1], terminal_growth, discount)
     pv_tv = tv / (one + discount) ** len(fcfs)
-    ev = sum(pv_fcfs, Decimal("0")) + pv_tv
+    ev = sum(pv_fcfs, Decimal(0)) + pv_tv
     return ev, pv_tv, pv_fcfs
 
 
@@ -79,7 +78,7 @@ def value_from_fixture(fixture: dict[str, Any]) -> dict[str, Any]:
     wd = to_decimal(structure["debt_weight"], field="debt_weight")
     kd = to_decimal(structure["pre_tax_cost_of_debt"], field="pre_tax_cost_of_debt")
     tax = to_decimal(structure["tax_rate"], field="tax_rate")
-    if we + wd != Decimal("1"):
+    if we + wd != Decimal(1):
         raise ValueError("equity_weight + debt_weight must equal 1")
     fcfs = [to_decimal(v, field=f"fcf[{i}]") for i, v in enumerate(fixture["fcf"])]
     g = to_decimal(fixture["terminal_growth"], field="terminal_growth")
@@ -87,7 +86,9 @@ def value_from_fixture(fixture: dict[str, Any]) -> dict[str, Any]:
     if g > g_cap:
         raise ValueError("terminal growth exceeds long-run GDP cap in fixture")
     net_debt = to_decimal(fixture.get("net_debt", "0"), field="net_debt")
-    shares = to_decimal(fixture.get("shares_outstanding", "1"), field="shares_outstanding")
+    shares = to_decimal(
+        fixture.get("shares_outstanding", "1"), field="shares_outstanding"
+    )
     if shares <= 0:
         raise ValueError("shares_outstanding must be positive")
     with ledger_context():
@@ -159,12 +160,27 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     path = Path(args.fixture)
     if args.dry_run:
-        print(json.dumps(stamp_payload({"dry_run": True, "fixture": path.as_posix()}), indent=2))
+        print(
+            json.dumps(
+                stamp_payload({"dry_run": True, "fixture": path.as_posix()}), indent=2
+            )
+        )
         return 0
     try:
         fixture = json.loads(path.read_text(encoding="utf-8"))
-        result = sensitivity_table(fixture) if args.sensitivity else value_from_fixture(fixture)
-    except (OSError, KeyError, ValueError, FloatLedgerError, json.JSONDecodeError, ZeroDivisionError) as exc:
+        result = (
+            sensitivity_table(fixture)
+            if args.sensitivity
+            else value_from_fixture(fixture)
+        )
+    except (
+        OSError,
+        KeyError,
+        ValueError,
+        FloatLedgerError,
+        json.JSONDecodeError,
+        ZeroDivisionError,
+    ) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     if args.json:
