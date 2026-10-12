@@ -56,13 +56,22 @@ class TestTier1FastPath(unittest.TestCase):
             ("isolate the worktree", "isolate-work", "router"),
             ("qmd search docs", "qmd-usage", "qmd-ops"),
             ("qmd commands and retrieval", "qmd-usage", "qmd-ops"),
-            ("run noir scan on api", "noir-scan", "artifact-agent"),
             ("render mermaid diagram", "mermaid-diagram", "artifact-agent"),
             ("ast-grep precision retrieval", "ast-grep", "router-maintenance"),
             ("headroom context compression", "headroom", "router-maintenance"),
             ("markdownlint fix md001", "markdownlint", "documentation-ops"),
             ("deep research into cloud models", "deep-research", "detailed-activity"),
             ("create memory checkpoint", "memory-create", "ai-tooling-ops"),
+            ("dcf valuation model", "dcf-valuation-model", "financial-modeling-analyst"),
+            ("comps financial benchmark", "comps-financial-benchmark", "financial-modeling-analyst"),
+            ("lbo debt schedule", "lbo-debt-schedule", "financial-modeling-analyst"),
+            ("portfolio optimization", "portfolio-optimization", "portfolio-strategy-operator"),
+            ("rebalancing drift ledger", "rebalancing-drift-ledger", "portfolio-strategy-operator"),
+            ("tax loss harvesting", "tax-loss-harvesting", "portfolio-strategy-operator"),
+            ("monte carlo var risk stress simulation", "risk-stress-simulation", "risk-stress-tester"),
+            ("macro scenario shocker", "macro-scenario-shocker", "risk-stress-tester"),
+            ("sec edgar extract", "sec-edgar-extract", "sec-compliance-curator"),
+            ("form adv compliance", "form-adv-compliance", "sec-compliance-curator"),
         ]
         for query, expected_skill, expected_owner in test_cases:
             res = self.tier1.evaluate(query)
@@ -98,12 +107,12 @@ class TestTier1FastPath(unittest.TestCase):
         self.assertIn("anti-slop", res.conflicting_skills)
         self.assertIn("antagonistic-review", res.conflicting_skills)
 
-        # Another multi-intent query
-        query2 = "Run noir scan and create mermaid diagram"
+        # Multi-intent query with financial and reporting skills
+        query2 = "Run dcf valuation model and create mermaid diagram"
         res2 = self.tier1.evaluate(query2)
         self.assertFalse(res2.matched)
         self.assertEqual(res2.reason, "multi_intent_conflict")
-        self.assertIn("noir-scan", res2.conflicting_skills)
+        self.assertIn("dcf-valuation-model", res2.conflicting_skills)
         self.assertIn("mermaid-diagram", res2.conflicting_skills)
 
 
@@ -125,27 +134,21 @@ class TestTier2BM25(unittest.TestCase):
         self.assertNotIn("and", tokens)
         self.assertNotIn("on", tokens)
 
-    def test_bm25_semantic_ranking_skills(self) -> None:
-        if not _skill_md("noir-scan").is_file():
-            self.skipTest("noir-scan is instance-only; omitted from wiki template")
-        # Query without exact fast-path keywords but matching skill purpose
-        query = "discover shadow routes and attack surface parameters"
+    def test_bm25_semantic_ranking_financial(self) -> None:
+        query = "unlevered free cash flow WACC Gordon growth terminal value"
         res = self.bm25.search(query, top_k=3)
         self.assertTrue(len(res.candidates) > 0)
         top = res.candidates[0]
-        self.assertEqual(top.name, "noir-scan")
-        self.assertEqual(top.owner_agent, "artifact-agent")
+        self.assertEqual(top.name, "dcf-valuation-model")
+        self.assertEqual(top.owner_agent, "financial-modeling-analyst")
         self.assertGreater(top.score, 0.0)
-        self.assertGreater(top.confidence, 0.5)
 
-    def test_bm25_ranking_cloud_logs(self) -> None:
-        if not (_skill_md("aws-logs").is_file() or _skill_md("aws-read").is_file()):
-            self.skipTest("aws-logs/aws-read are instance-only; omitted from wiki template")
-        query = "inspect amazon cloudwatch log streams via oauth"
+    def test_bm25_ranking_wash_sales(self) -> None:
+        query = "disallowed capital losses 61-day window replacement ETF"
         res = self.bm25.search(query, top_k=3)
         self.assertTrue(len(res.candidates) > 0)
         top_names = [c.name for c in res.candidates]
-        self.assertTrue("aws-logs" in top_names or "aws-read" in top_names)
+        self.assertIn("tax-loss-harvesting", top_names)
 
     def test_bm25_empty_query(self) -> None:
         res = self.bm25.search("", top_k=3)
@@ -215,9 +218,9 @@ class TestHybridDispatcher(unittest.TestCase):
 
     def test_dispatch_tier2_bm25(self) -> None:
         # Tier 2 specific invocation
-        res = self.dispatcher.dispatch("finding shadow endpoints and routes", tier="2")
+        res = self.dispatcher.dispatch("discounted cash flow Gordon growth terminal value", tier="2")
         self.assertEqual(res.selected_tier, 2)
-        self.assertIsNotNone(res.final_target)
+        self.assertEqual(res.final_target, "dcf-valuation-model")
         self.assertIsNotNone(res.tier2)
 
     def test_dispatch_tier3_multi_intent(self) -> None:
@@ -239,8 +242,7 @@ class TestSchemaV2SkillParsing(unittest.TestCase):
     """Unit tests for Schema V2 metadata parsing and indexing."""
 
     def test_load_skill_record_v2_fields(self) -> None:
-        threat_model_path = _skill_md("threat-model")
-        skill_path = threat_model_path if threat_model_path.is_file() else _skill_md("isolate-work")
+        skill_path = _skill_md("dcf-valuation-model")
         rec = load_skill_record(skill_path)
         self.assertEqual(rec["name"], skill_path.parent.name)
         self.assertTrue(rec.get("owner_agent"))

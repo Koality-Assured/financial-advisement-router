@@ -1,0 +1,59 @@
+{
+  "target": {
+    "name": "Apex Cloud Technologies",
+    "ticker": "APEX",
+    "ebitda": "45000000.00",
+    "net_income": "25000000.00",
+    "eps": "5.00",
+    "revenue": "150000000.00",
+    "net_debt": "15000000.00",
+    "shares_outstanding": "5000000"
+  },
+  "peers": [
+    {
+      "name": "Alpha Systems Inc",
+      "ticker": "ALPH",
+      "enterprise_value": "500000000.00",
+      "ebitda": "50000000.00",
+      "market_cap": "480000000.00",
+      "net_income": "30000000.00",
+      "revenue": "200000000.00"
+    },
+    {
+      "name": "Beta Data Corp",
+      "ticker": "BETA",
+      "enterprise_value": "720000000.00",
+      "ebitda": "60000000.00",
+      "market_cap": "700000000.00",
+      "net_income": "35000000.00",
+      "revenue": "240000000.00"
+    },
+    {
+      "name": "Gamma Networks Ltd",
+      "ticker": "GAMM",
+      "enterprise_value": "400000000.00",
+      "ebitda": "40000000.00",
+      "market_cap": "360000000.00",
+      "net_income": "20000000.00",
+      "revenue": "160000000.00"
+    },
+    {
+      "name": "Delta Intelligence SE",
+      "ticker": "DELT",
+      "enterprise_value": "1200000000.00",
+      "ebitda": "80000000.00",
+      "market_cap": "1100000000.00",
+      "net_income": "44000000.00",
+      "revenue": "300000000.00"
+    },
+    {
+      "name": "Epsilon Infrastructure Inc",
+      "ticker": "EPSI",
+      "enterprise_value": "650000000.00",
+      "ebitda": "50000000.00",
+      "market_cap": "630000000.00",
+      "net_income": "28000000.00",
+      "revenue": "250000000.00"
+    }
+  ]
+}

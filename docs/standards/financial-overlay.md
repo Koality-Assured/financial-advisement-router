@@ -15,12 +15,12 @@ Every model output is a non-discretionary research product: `NON-DISCRETIONARY F
 
 ## Domain agents
 
-| Agent | Tier | Skill |
+| Agent | Tier | Skills |
 | --- | --- | --- |
-| `portfolio-strategy-operator` | high | `portfolio-optimization` |
-| `financial-modeling-analyst` | high | `dcf-valuation-model` |
-| `sec-compliance-curator` | standard | `sec-edgar-extract` |
-| `risk-stress-tester` | high | `risk-stress-simulation` |
+| `portfolio-strategy-operator` | high | `portfolio-optimization`, `tax-loss-harvesting`, `rebalancing-drift-ledger` |
+| `financial-modeling-analyst` | high | `dcf-valuation-model`, `comps-financial-benchmark`, `lbo-debt-schedule` |
+| `sec-compliance-curator` | standard | `sec-edgar-extract`, `form-adv-compliance` |
+| `risk-stress-tester` | high | `risk-stress-simulation`, `macro-scenario-shocker` |
 
 Pairing: true specialists are allowed in this distinct domain repository.
 
